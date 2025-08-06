@@ -1,4 +1,11 @@
 {
+  "name":"venconnect",
+  "version":"1.0.0",
+  "description":"My Node.js server project",
+  "main":"server.js",
+  "scripts":{
+    "start":"node server.js"
+  },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
