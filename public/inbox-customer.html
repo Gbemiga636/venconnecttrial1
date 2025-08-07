@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Inbox | VenConnect</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Lemon&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
@@ -76,6 +76,13 @@
       width: 10px;
       height: 10px;
     }
+.bottom-nav {
+  transition: transform 0.3s ease;
+}
+
+.bottom-nav.hide {
+  transform: translateY(100%);
+}
 
     .floating-btn {
       position: fixed;
@@ -234,6 +241,26 @@
       background: var(--frosted);
       color: white;
     }
+@media (max-width: 480px) {
+  .chat-input {
+    padding: 0.4rem;
+    gap: 0.3rem;
+  }
+
+  .chat-input input {
+    font-size: 1rem;
+    padding: 0.5rem;
+  }
+
+  .message {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.8rem;
+  }
+
+  .chat-header {
+    padding: 0.8rem;
+  }
+}
 
     .chat-input i {
       cursor: pointer;
@@ -557,6 +584,9 @@ previewBar.onclick = e => {
 
     await loadMessages(vendorId);
     await fetch(`/api/messages/${vendorId}/mark-read`, { method: 'PATCH' });
+setTimeout(() => {
+  messageInput.focus();
+}, 200);
   }
 
   async function loadMessages(vendorId) {
@@ -883,6 +913,47 @@ document.getElementById('reportForm').addEventListener('submit', async e => {
     alert('Error submitting report.');
   }
 });  
+</script>
+<script>
+  // ...
+
+  // === ADD THIS BLOCK TO FIX INPUT HIDING ON MOBILE ===
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', adjustForKeyboard);
+    window.visualViewport.addEventListener('scroll', adjustForKeyboard);
+  } else {
+    window.addEventListener('resize', adjustForKeyboard);
+  }
+
+  function adjustForKeyboard() {
+    const viewportHeight = window.visualViewport?.height || window.innerHeight;
+    const inputHeight = document.querySelector('.chat-input')?.offsetHeight || 60;
+    const chatMessages = document.getElementById('chatMessages');
+
+    const newHeight = viewportHeight - inputHeight - 40; // 40 for padding
+    chatMessages.style.maxHeight = `${newHeight}px`;
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+let initialViewportHeight = window.visualViewport?.height || window.innerHeight;
+
+
+
+function handleViewportChange() {
+  const currentHeight = window.visualViewport?.height || window.innerHeight;
+  const nav = document.querySelector('.bottom-nav');
+
+  if (!nav) return;
+
+  const isKeyboardOpen = currentHeight < initialViewportHeight - 100;
+  nav.classList.toggle('hide', isKeyboardOpen);
+}
+
+// ✅ This must be OUTSIDE the function
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', handleViewportChange);
+} else {
+  window.addEventListener('resize', handleViewportChange);
+}
 </script>
 </body>
 </html>
