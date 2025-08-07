@@ -136,6 +136,9 @@
     opacity: 0.6;
     text-decoration: none;
   }
+.flip-inner {
+  transition: transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
 
   .nav-item.active {
     color: var(--accent);
@@ -220,6 +223,65 @@
     h2 {
       font-size: 1.4rem;
     }
+/* ------------------ UX IMPROVEMENTS ------------------ */
+
+/* Prevent page scroll during scratch interaction */
+body.no-scroll {
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* Better vendor card sizing and centering */
+.flip-card {
+  max-width: 280px;
+  margin: 0 auto;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2); /* Optional enhancement */
+}
+
+.flip-inner {
+  transition: transform 0.6s ease-in-out; /* Optional enhancement */
+}
+
+/* Flip back side spacing improvements */
+.flip-back {
+  padding: 1.4rem 1.1rem;
+}
+
+/* Improved mobile layout */
+@media (max-width: 480px) {
+  .vendors-container {
+    grid-template-columns: 1fr;
+    padding: 1rem 1.5rem;
+    justify-items: center;
+  }
+
+  .flip-card {
+    max-width: 220px;
+  }
+
+  .flip-back {
+    padding: 1.6rem 1.2rem;
+  }
+
+  .claim-textarea {
+    background: rgba(255,255,255,0.06);
+    color: white;
+    font-size: 0.95rem;
+    padding: 0.8rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+
+  .submit-claim-btn {
+    width: 100%;
+    padding: 0.7rem;
+    font-size: 1rem;
+  }
+
+  .submit-claim-btn:hover {
+    background-color: #8b4fff;
+  }
+}
 
     .vendors-container {
       grid-template-columns: 1fr;
@@ -597,10 +659,11 @@ document.getElementById('puzzleRoot').append(container);
   ctx.fillRect(0, 0, w, h);
 
   let isDrawing = false;
-  let revealed = 0;
+  let revealedCount = 0;
 
   function draw(e) {
     if (!isDrawing) return;
+
     const rect = canvas.getBoundingClientRect();
     const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
     const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
@@ -610,16 +673,31 @@ document.getElementById('puzzleRoot').append(container);
     ctx.arc(x, y, 20, 0, Math.PI * 2);
     ctx.fill();
 
-    revealed++;
-    if (revealed > 50) onReveal();
+    revealedCount++;
+
+    if (revealedCount > 50) {
+      stopDrawing(); // Ensure scroll is re-enabled
+      onReveal();
+    }
   }
 
-  canvas.addEventListener('mousedown', () => isDrawing = true);
-  canvas.addEventListener('mouseup', () => isDrawing = false);
+  function startDrawing() {
+    isDrawing = true;
+    document.body.classList.add('no-scroll');
+  }
+
+  function stopDrawing() {
+    isDrawing = false;
+    document.body.classList.remove('no-scroll');
+  }
+
+  canvas.addEventListener('mousedown', startDrawing);
+  canvas.addEventListener('mouseup', stopDrawing);
   canvas.addEventListener('mousemove', draw);
-  canvas.addEventListener('touchstart', () => isDrawing = true);
-  canvas.addEventListener('touchend', () => isDrawing = false);
-  canvas.addEventListener('touchmove', draw);
+  canvas.addEventListener('touchstart', startDrawing);
+  canvas.addEventListener('touchend', stopDrawing);
+  canvas.addEventListener('touchcancel', stopDrawing);
+  canvas.addEventListener('touchmove', draw, { passive: false });
 }
 
   loadTopVendors();
