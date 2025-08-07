@@ -1,0 +1,509 @@
+<!-- settings.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Settings | VenConnect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lemon&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #25004d, #4c0099, #000000);
+      --text-color: #fff;
+      --accent: #a05cff;
+      --frosted: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.15);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-color);
+    }
+
+    h2 {
+      font-family: 'Lemon', cursive;
+      text-align: center;
+      padding: 1rem;
+      font-size: 1.6rem;
+    }
+.kyc-badge {
+  background: rgba(255,255,255,0.1);
+  color: white;
+  padding: 0.5rem 1.2rem;
+  border-radius: 20px;
+  opacity: 0.3;
+  transition: all 0.3s;
+  font-weight: 500;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.kyc-badge.active {
+  opacity: 1;
+  background: var(--accent);
+}
+
+    .settings-container {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      max-width: 500px;
+      margin: 0 auto 6rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      padding: 0.8rem;
+      border-radius: 10px;
+      border: none;
+      background: var(--frosted);
+      border: 1px solid var(--border);
+      color: white;
+      font-size: 1rem;
+    }
+
+    .form-group input[type="file"] {
+      padding: 0.4rem;
+    }
+
+    .btn {
+      padding: 0.9rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .btn-save {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-danger {
+      background: #ff4d4d;
+      color: white;
+    }
+
+    .btn-logout {
+      background: #333;
+      color: white;
+    }
+
+    nav.bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #0e001f;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0.8rem 0;
+      z-index: 999;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: white;
+      font-size: 0.75rem;
+      opacity: 0.6;
+      text-decoration: none;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+      opacity: 1;
+    }
+
+    .nav-item i {
+      font-size: 1.3rem;
+      margin-bottom: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Account Settings</h2>
+
+  <div class="settings-container">
+    <div class="form-group">
+      <label for="name">Name</label>
+      <input type="text" id="name" placeholder="Enter name">
+    </div>
+
+    <div class="form-group">
+      <label for="bio">Bio</label>
+      <textarea id="bio" rows="3" placeholder="Enter bio..."></textarea>
+    </div>
+<div class="form-group" style="align-items: center; text-align: center;">
+  <img id="logoPreview" src="/uploads/default.png" alt="Logo" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:2px solid var(--border);margin-bottom:1rem;">
+</div>
+
+    <div class="form-group">
+      <label for="logo">Logo / Profile Picture</label>
+      <input type="file" id="logo" accept="image/*">
+    </div>
+<div class="form-group">
+  <label for="shopName">Shop Name</label>
+  <input type="text" id="shopName" placeholder="Enter shop name">
+</div>
+<div class="form-group">
+  <label for="location">Location</label>
+  <div style="position: relative;">
+    <input type="text" id="location" placeholder="Enter location" style="padding-right: 2.5rem;">
+    <button type="button" onclick="getCurrentLocation()" style="
+      position: absolute;
+      right: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: #aaa;
+      cursor: pointer;
+    ">
+      <i class="fas fa-map-marker-alt"></i>
+    </button>
+  </div>
+</div>
+
+    <button class="btn btn-save" onclick="saveChanges()">Save Changes</button>
+    <button class="btn btn-danger" onclick="deleteAccount()">Delete Account</button>
+    <button class="btn btn-logout" onclick="logout()">Log Out</button>
+  </div>
+<h2>KYC Verification</h2>
+<div class="settings-container" id="kycSection">
+  <p style="text-align:center; font-weight:500;">Get that verification badge today</p>
+
+  <div class="form-group" style="align-items:center;">
+    <img id="selfiePreview" src="" alt="Selfie Preview" style="display:none; width:100px;height:100px;border-radius:50%;object-fit:cover;border:2px solid var(--border); margin-bottom:1rem;">
+    <button class="btn btn-save" onclick="openSelfieModal()">Take Selfie</button>
+  </div>
+
+  <div class="form-group">
+    <label for="kycName">Full Name</label>
+    <input type="text" id="kycName" placeholder="Enter full name">
+  </div>
+
+  <div class="form-group">
+    <label for="dob">Date of Birth</label>
+    <input type="date" id="dob">
+  </div>
+
+  <div class="form-group">
+    <label for="idFront">Upload ID - Front</label>
+    <input type="file" id="idFront" accept="image/*">
+  </div>
+
+  <div class="form-group">
+    <label for="idBack">Upload ID - Back</label>
+    <input type="file" id="idBack" accept="image/*">
+  </div>
+
+  <button class="btn btn-save" onclick="submitKYC()">Submit KYC</button>
+
+  <div style="display: flex; justify-content: space-around; margin-top:1.2rem;">
+    <div class="kyc-badge" id="badgeVerified">Verified</div>
+    <div class="kyc-badge" id="badgeRejected">Rejected</div>
+    <div class="kyc-badge" id="badgePending">Awaiting Approval</div>
+  </div>
+</div>
+
+<!-- Selfie Modal -->
+<div id="selfieModal" style="
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #000;
+  z-index: 10000;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+">
+  <video id="modalVideo" autoplay playsinline style="max-width: 100%; border-radius: 12px;"></video>
+  <canvas id="modalCanvas" style="display: none;"></canvas>
+
+  <div id="captureButtons" style="margin-top: 1rem;">
+    <button class="btn btn-save" onclick="captureFromModal()">Capture</button>
+  </div>
+
+  <div id="confirmButtons" style="display: none; gap: 1rem; margin-top: 1rem;">
+    <button class="btn btn-save" onclick="confirmSelfie()">Confirm</button>
+    <button class="btn btn-danger" onclick="retakeSelfie()">Retake</button>
+  </div>
+</div>
+  <nav class="bottom-nav">
+    <a href="dashboard-vendor.html" class="nav-item"><i class="fas fa-house"></i>Home</a>
+    <a href="shop.html" class="nav-item"><i class="fas fa-store"></i>My Shop</a>
+    <a href="explore.html" class="nav-item"><i class="fas fa-video"></i>Explore</a>
+    <a href="inbox.html" class="nav-item"><i class="fas fa-message"></i>Inbox</a>
+    <a href="settings.html" class="nav-item active"><i class="fas fa-gear"></i>Settings</a>
+  </nav>
+
+  <script>
+function showToast(message, type = 'default') {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.style.background = type === 'error' ? '#ff4d4d' : '#222';
+  toast.style.opacity = 1;
+
+  setTimeout(() => {
+    toast.style.opacity = 0;
+  }, 3000);
+}
+    async function loadUser() {
+  const res = await fetch('/api/me');
+  const data = await res.json();
+
+  document.getElementById('name').value = data.name || '';
+  document.getElementById('bio').value = data.bio || '';
+  document.getElementById('shopName').value = data.shopName || '';
+document.getElementById('location').value = data.location || '';
+  document.getElementById('logoPreview').src = '/uploads/' + (data.shopLogo || 'default.png');
+}
+document.getElementById('logo').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file) {
+    const url = URL.createObjectURL(file);
+    document.getElementById('logoPreview').src = url;
+  }
+});
+async function getCurrentLocation() {
+  if (!navigator.geolocation) {
+    showToast('Geolocation not supported', 'error');
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const { latitude, longitude } = pos.coords;
+
+    try {
+      // Use OpenStreetMap reverse geocoding
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+      const data = await res.json();
+      document.getElementById('location').value = data.display_name || `${latitude}, ${longitude}`;
+      showToast('Location fetched');
+    } catch (err) {
+      document.getElementById('location').value = `${latitude}, ${longitude}`;
+      showToast('Location (coords) filled');
+    }
+  }, (err) => {
+    showToast('Permission denied or error fetching location', 'error');
+  });
+}
+let selfieBlob = null;
+let selfieStream = null;
+
+function openSelfieModal() {
+  const modal = document.getElementById('selfieModal');
+  modal.style.display = 'flex';
+  document.getElementById('captureButtons').style.display = 'block';
+  document.getElementById('confirmButtons').style.display = 'none';
+
+  navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+    selfieStream = stream;
+    document.getElementById('modalVideo').srcObject = stream;
+  }).catch(() => {
+    showToast('Camera access denied', 'error');
+    modal.style.display = 'none';
+  });
+}
+
+function captureFromModal() {
+  const video = document.getElementById('modalVideo');
+  const canvas = document.getElementById('modalCanvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  canvas.toBlob(blob => {
+    selfieBlob = blob;
+    // Stop video stream
+    selfieStream.getTracks().forEach(track => track.stop());
+    document.getElementById('captureButtons').style.display = 'none';
+    document.getElementById('confirmButtons').style.display = 'flex';
+    video.style.display = 'none';
+    canvas.style.display = 'block';
+  }, 'image/jpeg');
+}
+
+function confirmSelfie() {
+  const canvas = document.getElementById('modalCanvas');
+  const dataURL = canvas.toDataURL('image/jpeg');
+  document.getElementById('selfiePreview').src = dataURL;
+  document.getElementById('selfiePreview').style.display = 'block';
+  closeSelfieModal();
+}
+
+function retakeSelfie() {
+  document.getElementById('modalCanvas').style.display = 'none';
+  document.getElementById('modalVideo').style.display = 'block';
+  document.getElementById('confirmButtons').style.display = 'none';
+  document.getElementById('captureButtons').style.display = 'block';
+  openSelfieModal();
+}
+
+function closeSelfieModal() {
+  document.getElementById('selfieModal').style.display = 'none';
+}
+async function submitKYC() {
+  const name = document.getElementById('kycName').value;
+  const dob = document.getElementById('dob').value;
+  const idFront = document.getElementById('idFront').files[0];
+  const idBack = document.getElementById('idBack').files[0];
+
+  if (!selfieBlob || !name || !dob || !idFront || !idBack) {
+    showToast('Please complete all fields', 'error');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('selfie', selfieBlob, 'selfie.jpg');
+  formData.append('name', name);
+  formData.append('dob', dob);
+  formData.append('idFront', idFront);
+  formData.append('idBack', idBack);
+
+  const res = await fetch('/api/kyc', {
+    method: 'POST',
+    body: formData
+  });
+
+  if (res.ok) {
+    showToast('KYC submitted!');
+    renderKYCStatus('pending');
+  } else {
+    showToast('Failed to submit KYC', 'error');
+  }
+}
+
+function renderKYCStatus(status) {
+  const statuses = ['verified', 'rejected', 'pending'];
+  statuses.forEach(s => {
+    document.getElementById(`badge${capitalize(s)}`).classList.remove('active');
+  });
+  if (status) document.getElementById(`badge${capitalize(status)}`).classList.add('active');
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+async function fetchKYCStatus() {
+  const res = await fetch('/api/kyc/status');
+  if (!res.ok) return;
+
+  const data = await res.json(); // { status, selfieUrl, name, dob }
+  const status = data.status;
+  renderKYCStatus(status);
+
+  if (status === 'pending' || status === 'verified') {
+    // Disable all inputs
+    document.querySelectorAll('#kycSection input, #kycSection button').forEach(el => {
+      el.disabled = true;
+      el.style.opacity = 0.6;
+      el.style.pointerEvents = 'none';
+    });
+
+    // Show selfie preview from URL (assuming /uploads/selfies/xyz.jpg)
+    if (data.selfieUrl) {
+      document.getElementById('selfiePreview').src = data.selfieUrl;
+      document.getElementById('selfiePreview').style.display = 'block';
+    }
+
+    // Optional: fill in name + dob if needed
+    if (data.name) document.getElementById('kycName').value = data.name;
+    if (data.dob) document.getElementById('dob').value = data.dob;
+  }
+
+  if (status === 'rejected') {
+    // Allow retry: clear previous selfie blob
+    selfieBlob = null;
+    document.getElementById('selfiePreview').src = '';
+    document.getElementById('selfiePreview').style.display = 'none';
+    document.querySelectorAll('#kycSection input, #kycSection button').forEach(el => {
+      el.disabled = false;
+      el.style.opacity = 1;
+      el.style.pointerEvents = 'auto';
+    });
+  }
+}
+
+fetchKYCStatus();
+    async function saveChanges() {
+  const name = document.getElementById('name').value;
+  const bio = document.getElementById('bio').value;
+  const shopName = document.getElementById('shopName').value;
+  const location = document.getElementById('location').value;
+  const logo = document.getElementById('logo').files[0];
+
+  const formData = new FormData(); // ✅ move this up first
+  formData.append('name', name);
+  formData.append('bio', bio);
+  formData.append('shopName', shopName);
+  formData.append('location', location); // ✅ now safe
+  if (logo) formData.append('logo', logo);
+
+  const res = await fetch('/api/me', {
+    method: 'PUT',
+    body: formData
+  });
+
+  if (res.ok) {
+    showToast('Changes saved successfully!');
+    loadUser();
+  } else {
+    showToast('Failed to save changes.', 'error');
+  }
+}
+
+    async function deleteAccount() {
+      if (!confirm('Are you sure you want to delete your account? This action is irreversible.')) return;
+      const res = await fetch('/api/me', { method: 'DELETE' });
+ if (res.ok) {
+  showToast('Account deleted.');
+  setTimeout(() => window.location.href = '/login.html', 1000);
+} else {
+  showToast('Error deleting account.', 'error');
+}
+    }
+
+    function logout() {
+      // Adjust according to your auth mechanism
+      fetch('/api/logout', { method: 'POST' }).then(() => {
+        window.location.href = '/login.html';
+      });
+    }
+
+    loadUser();
+  </script>
+<div id="toast" style="
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #222;
+  color: #fff;
+  padding: 0.8rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 9999;
+"></div>
+</body>
+</html>

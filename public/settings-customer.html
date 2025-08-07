@@ -1,0 +1,221 @@
+<!-- settings-customer.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Customer Settings | VenConnect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lemon&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #25004d, #4c0099, #000000);
+      --text-color: #fff;
+      --accent: #a05cff;
+      --frosted: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.15);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-color);
+    }
+
+    h2 {
+      font-family: 'Lemon', cursive;
+      text-align: center;
+      padding: 1rem;
+      font-size: 1.6rem;
+    }
+
+    .settings-container {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      max-width: 500px;
+      margin: 0 auto 6rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .form-group input {
+      padding: 0.8rem;
+      border-radius: 10px;
+      border: none;
+      background: var(--frosted);
+      border: 1px solid var(--border);
+      color: white;
+      font-size: 1rem;
+    }
+
+    .btn {
+      padding: 0.9rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .btn-save {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-danger {
+      background: #ff4d4d;
+      color: white;
+    }
+
+    .btn-logout {
+      background: #333;
+      color: white;
+    }
+
+    nav.bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #0e001f;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0.8rem 0;
+      z-index: 999;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: white;
+      font-size: 0.75rem;
+      opacity: 0.6;
+      text-decoration: none;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+      opacity: 1;
+    }
+
+    .nav-item i {
+      font-size: 1.3rem;
+      margin-bottom: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Account Settings</h2>
+
+  <div class="settings-container">
+    <div class="form-group">
+      <label for="name">Full Name</label>
+      <input type="text" id="name" placeholder="Enter full name" />
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input type="email" id="email" placeholder="Enter email" disabled />
+    </div>
+
+    <div class="form-group">
+      <label for="phone">Phone Number</label>
+      <input type="tel" id="phone" placeholder="Enter phone number" />
+    </div>
+
+    <button class="btn btn-save" onclick="saveChanges()">Save Changes</button>
+    <button class="btn btn-danger" onclick="deleteAccount()">Delete Account</button>
+    <button class="btn btn-logout" onclick="logout()">Log Out</button>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="dashboard-customer.html" class="nav-item "><i class="fas fa-house"></i>Home</a>
+    <a href="top-skizzy.html" class="nav-item"><i class="fas fa-trophy"></i>Top Skizzy Vendor</a>
+    <a href="explore-customer.html" class="nav-item"><i class="fas fa-video"></i>Explore</a>
+    <a href="inbox-customer.html" class="nav-item"><i class="fas fa-message"></i>Inbox</a>
+    <a href="settings-customer.html" class="nav-item active"><i class="fas fa-gear"></i>Settings</a>
+  </nav>
+
+  <script>
+    function showToast(message, type = 'default') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.background = type === 'error' ? '#ff4d4d' : '#222';
+      toast.style.opacity = 1;
+      setTimeout(() => { toast.style.opacity = 0 }, 3000);
+    }
+
+    async function loadUser() {
+      const res = await fetch('/api/me');
+      const data = await res.json();
+      document.getElementById('name').value = data.name || '';
+      document.getElementById('email').value = data.email || '';
+      document.getElementById('phone').value = data.phone || '';
+    }
+
+    async function saveChanges() {
+      const name = document.getElementById('name').value;
+      const phone = document.getElementById('phone').value;
+
+      const res = await fetch('/api/me', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone })
+      });
+
+      if (res.ok) {
+        showToast('Changes saved!');
+        loadUser();
+      } else {
+        showToast('Failed to save changes', 'error');
+      }
+    }
+
+    async function deleteAccount() {
+      if (!confirm('Are you sure you want to delete your account?')) return;
+      const res = await fetch('/api/me', { method: 'DELETE' });
+      if (res.ok) {
+        showToast('Account deleted.');
+        setTimeout(() => window.location.href = '/login.html', 1500);
+      } else {
+        showToast('Error deleting account.', 'error');
+      }
+    }
+
+    function logout() {
+      fetch('/api/logout', { method: 'POST' }).then(() => {
+        window.location.href = '/login.html';
+      });
+    }
+
+    loadUser();
+  </script>
+
+  <div id="toast" style="
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #222;
+    color: #fff;
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 9999;
+  "></div>
+</body>
+</html>

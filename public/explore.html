@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Explore | VenConnect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #000;
+      --text: #fff;
+      --accent: #a05cff;
+      --frost: rgba(255,255,255,0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Poppins', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .video-feed {
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+    }
+    .video-item {
+      position: relative;
+      height: 100vh;
+      scroll-snap-align: start;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+    .play-btn, .mute-btn {
+      position: absolute;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      border: 2px solid white;
+      border-radius: 50%;
+      font-size: 2rem;
+      padding: 1rem;
+      cursor: pointer;
+      z-index: 2;
+    }
+    .play-btn {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .mute-btn {
+      bottom: 1rem;
+      left: 1rem;
+      font-size: 1.3rem;
+      padding: 0.6rem 0.8rem;
+      transform: none;
+    }
+    .video-actions {
+      position: absolute;
+      right: 1rem;
+      bottom: 6rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      z-index: 3;
+    }
+    .video-actions button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .likes {
+      font-size: 0.9rem;
+      margin-top: 0.2rem;
+      text-align: center;
+    }
+    .fa-heart.liked {
+      color: red;
+    }
+
+    .shop-overlay {
+      position: absolute;
+      bottom: 1rem;
+      left: 4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(0,0,0,0.5);
+      padding: 0.4rem 0.8rem;
+      border-radius: 30px;
+      z-index: 4;
+    }
+    .shop-overlay img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .shop-overlay span {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #fff;
+    }
+
+    nav.bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #0e001f;
+      border-top: 1px solid var(--frost);
+      display: flex;
+      justify-content: space-around;
+      padding: 0.8rem 0;
+      z-index: 5;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #fff;
+      opacity: 0.6;
+      text-decoration: none;
+      font-size: 0.75rem;
+    }
+    .nav-item.active {
+      color: var(--accent);
+      opacity: 1;
+    }
+    .nav-item i {
+      font-size: 1.3rem;
+      margin-bottom: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="video-feed" id="videoFeed"></div>
+
+  <nav class="bottom-nav">
+    <a href="dashboard-vendor.html" class="nav-item"><i class="fas fa-house"></i>Home</a>
+    <a href="shop.html" class="nav-item"><i class="fas fa-store"></i>My Shop</a>
+    <a href="explore.html" class="nav-item active"><i class="fas fa-video"></i>Explore</a>
+    <a href="inbox.html" class="nav-item"><i class="fas fa-message"></i>Inbox</a>
+    <a href="settings.html" class="nav-item"><i class="fas fa-gear"></i>Settings</a>
+  </nav>
+
+  <script>
+  async function api(path, opts = {}) {
+    const res = await fetch(path, opts);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  }
+
+  
+
+  function shuffleArray(arr) {
+    return arr.sort(() => Math.random() - 0.5);
+  }
+
+  async function loadVideos() {
+    const videos = shuffleArray(await api('/api/videos/explore'));
+    const feed = document.getElementById('videoFeed');
+    feed.innerHTML = '';
+
+    videos.forEach(v => {
+      const div = document.createElement('div');
+      div.className = 'video-item';
+
+      const videoId = v._id;
+      const vendorId = v.vendor.id;
+      const videoFile = v.video;
+      const shopName = v.vendor.name || 'Shop';
+      const shopLogo = v.vendor.shopLogo ? `/uploads/${v.vendor.shopLogo}` : 'default.png';
+      const liked = v.likedByUser;
+      div.innerHTML = `
+        <video src="/uploads/${videoFile}" playsinline loop muted></video>
+        <button class="play-btn" onclick="playVideo(this)">▶</button>
+        <button class="mute-btn" onclick="toggleMute(this)">
+          <i class="fas fa-volume-mute"></i>
+        </button>
+        <div class="shop-overlay">
+          <img src="${shopLogo}" alt="${shopName}" />
+          <span>${shopName}</span>
+        </div>
+        <div class="video-actions">
+          <button onclick="likeVideo('${videoId}', this)">
+            <i class="fas fa-heart ${liked ? 'liked' : ''}"></i>
+<div class="likes">${v.likes}</div>
+          </button>
+          <button onclick="messageVendor('${vendorId}', '${videoFile}')">
+            <i class="fas fa-comment-dots"></i>
+          </button>
+        </div>
+      `;
+
+      feed.appendChild(div);
+
+      const videoEl = div.querySelector("video");
+      const playBtn = div.querySelector(".play-btn");
+
+      videoEl.addEventListener("play", () => {
+        playBtn.style.display = "none";
+      });
+
+      videoEl.addEventListener("click", () => {
+        if (videoEl.paused) {
+          videoEl.play();
+        } else {
+          videoEl.pause();
+          playBtn.style.display = "block";
+        }
+      });
+
+      videoEl.play().catch(() => {
+        playBtn.style.display = "block";
+      });
+    });
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        const video = entry.target.querySelector("video");
+        if (video) {
+          if (entry.isIntersecting) {
+            video.play().catch(() => {});
+          } else {
+            video.pause();
+          }
+        }
+      });
+    }, { threshold: 0.6 });
+
+    document.querySelectorAll(".video-item").forEach(item => observer.observe(item));
+  }
+
+  async function likeVideo(id, btn) {
+  const heart = btn.querySelector('i');
+  const likesCount = btn.querySelector('.likes');
+
+  if (heart.classList.contains('liked')) return; // prevent re-liking
+
+  try {
+    const res = await api(`/api/videos/${id}/like`, { method: 'POST' });
+
+    heart.classList.add('liked');
+    likesCount.textContent = parseInt(likesCount.textContent) + 1;
+  } catch (err) {
+    alert('Error processing like');
+  }
+}
+
+  function playVideo(btn) {
+    const video = btn.parentElement.querySelector('video');
+    document.querySelectorAll('video').forEach(v => {
+      if (v !== video) v.pause();
+    });
+    video.play();
+    btn.style.display = "none";
+  }
+
+  function toggleMute(btn) {
+    const video = btn.parentElement.querySelector('video');
+    video.muted = !video.muted;
+    const icon = btn.querySelector('i');
+    icon.className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+  }
+
+  function messageVendor(vendorId, videoFile) {
+    const payload = {
+      vendorId,
+      video: videoFile
+    };
+    localStorage.setItem('venconnect:attachedVideo', JSON.stringify(payload));
+    window.location.href = `/inbox.html?vendor=${vendorId}`;
+  }
+
+  function enableSoundOnInteraction() {
+    const handler = () => {
+      document.querySelectorAll('video').forEach(video => {
+        video.muted = false;
+      });
+      document.removeEventListener('click', handler);
+      document.removeEventListener('touchstart', handler);
+    };
+
+    document.addEventListener('click', handler);
+    document.addEventListener('touchstart', handler);
+  }
+
+  window.onload = () => {
+    loadVideos();
+    enableSoundOnInteraction();
+  };
+</script>
+</body>
+</html>
+

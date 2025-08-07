@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Shop | VenConnect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lemon&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    :root {
+      --bg: linear-gradient(135deg, #25004d, #4c0099, #000);
+      --text: #fff;
+      --accent: #a05cff;
+      --frost: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.15);
+    }
+    * { box-sizing: border-box; margin:0; padding:0;}
+    body { background: var(--bg); color: var(--text); font-family:'Poppins'; min-height:100vh; padding-bottom:6rem;}
+    header { padding:1rem; text-align:center;}
+    header h1 { font-family:'Lemon'; color:var(--accent);}
+    .container { padding:1rem; }
+
+    .create-cta {
+      height:200px; display:flex;
+      justify-content:center; align-items:center;
+      border:2px dashed var(--accent);
+      border-radius:100%;
+      margin:2rem auto; width:200px;
+      flex-direction:column;
+      cursor:pointer;
+      color:var(--accent);
+      font-size:1.1rem;
+      text-align:center;
+    }
+
+    form { background:var(--frost); padding:1rem; border-radius:12px; margin-bottom:1rem; }
+    form input, form textarea, form select { width:100%; padding:0.8rem; margin-bottom:0.8rem; border:1px solid var(--border); border-radius:8px; background:transparent; color:var(--text);}
+    form button { background:var(--accent); padding:0.8rem 1.2rem; border:none; border-radius:40px; color:#fff; cursor:pointer; }
+
+    .shop-title { font-family:'Lemon'; font-size:1.8rem; margin-bottom:0.2rem;}
+    .shop-bio { opacity:0.9; margin-bottom:1rem; }
+
+    .products, .videos { margin-bottom:1.5rem; }
+    .item-card {
+      display:flex; gap:1rem; background:var(--frost);
+      border:1px solid var(--border); border-radius:12px;
+      padding:0.8rem; align-items:center;
+    }
+    .item-card img, .item-card video { width:70px; height:70px; object-fit:cover; border-radius:8px; }
+    .item-details { flex:1; overflow:hidden; }
+    .share-btn { font-size:1.2rem; cursor:pointer; color:var(--accent); }
+
+    nav.bottom-nav {
+      position:fixed; bottom:0; left:0; width:100%;
+      background:#0e001f; border-top:1px solid var(--border);
+      display:flex; justify-content:space-around; padding:0.8rem 0;
+    }
+    .nav-item { display:flex; flex-direction:column; align-items:center; color:#fff; opacity:0.6; text-decoration:none; font-size:0.75rem;}
+    .nav-item.active { color:var(--accent); opacity:1; }
+    .nav-item i { font-size:1.3rem; margin-bottom:0.2rem; }
+  </style>
+</head>
+<body>
+  <header><h1>My Ven Shop</h1></header>
+  <div class="container" id="main">
+
+    <div id="createCTA" class="create-cta" style="display:none;">
+      <i class="fas fa-plus-circle fa-3x"></i>
+      <div>Create your Shop</div>
+    </div>
+
+    <form id="createForm" style="display:none;">
+      <input name="shopName" placeholder="Shop Name" required />
+      <textarea name="bio" placeholder="Shop Bio" rows="3" required></textarea>
+      <input name="location" placeholder="Shop Location" required />
+      <button type="submit">Create Shop</button>
+    </form>
+
+    <div id="shopView" style="display:none;">
+      <div class="shop-title" id="sName"></div>
+      <div class="shop-bio" id="sBio"></div>
+      <button id="addProdBtn">Add Product</button>
+      <span class="share-btn" id="shareLink"><i class="fas fa-share-alt"></i></span>
+
+      <div class="products">
+        <h3>Products</h3>
+        <div id="prodsList"></div>
+      </div>
+
+      <button id="addVidBtn">Add Video</button>
+      <div class="videos">
+        <h3>My Videos</h3>
+        <div id="vidsList"></div>
+      </div>
+
+      <div id="reviewFormContainer"></div>
+    </div>
+
+    <form id="prodForm" style="display:none;" enctype="multipart/form-data">
+     <input type="file" name="image" accept="image/*" id="imageInput" />
+      <input name="name" placeholder="Product Name" required />
+      <input name="price" type="number" placeholder="Price" required />
+      <select name="currency"><option>NGN</option><option>USD</option></select>
+      <button type="submit">Add Product</button>
+    </form>
+
+    <form id="vidForm" style="display:none;" enctype="multipart/form-data">
+      <input type="file" name="video" accept="video/*" required />
+      <button type="submit">Upload Video</button>
+    </form>
+
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="dashboard-vendor.html" class="nav-item"><i class="fas fa-house"></i>Home</a>
+    <a href="shop.html" class="nav-item active"><i class="fas fa-store"></i>My Shop</a>
+    <a href="explore.html" class="nav-item"><i class="fas fa-video"></i>Explore</a>
+    <a href="inbox.html" class="nav-item"><i class="fas fa-message"></i>Inbox</a>
+    <a href="settings.html" class="nav-item"><i class="fas fa-gear"></i>Settings</a>
+  </nav>
+
+<script>
+  const socket = io();
+  let shop = null;
+  let editingProductId = null;
+  let imagePreviewEl = null;
+
+  async function api(path, opts = {}) {
+    const res = await fetch(path, opts);
+    if (res.ok) return res.json();
+    throw new Error((await res.text()) || res.status);
+  }
+
+  async function loadShop() {
+    try {
+      shop = await api('/api/my-shop');
+      if (shop) socket.emit('join', shop._id);
+    } catch {
+      shop = null;
+    }
+    updateUI();
+  }
+
+  function updateUI() {
+    document.getElementById('createCTA').style.display = shop ? 'none' : 'flex';
+    document.getElementById('createForm').style.display = shop ? 'none' : 'block';
+    document.getElementById('shopView').style.display = shop ? 'block' : 'none';
+    if (shop) {
+      document.getElementById('sName').textContent = shop.shopName;
+      document.getElementById('sBio').textContent = shop.bio;
+      loadProducts();
+      loadVideos();
+      loadReviews();
+    }
+  }
+
+  document.getElementById('createCTA').onclick = () => {
+    document.getElementById('createForm').style.display = 'block';
+    document.getElementById('createCTA').style.display = 'none';
+  };
+
+  document.getElementById('createForm').onsubmit = async e => {
+    e.preventDefault();
+    let fd = new FormData(e.target);
+    shop = await api('/api/shops', { method: 'POST', body: fd });
+    updateUI();
+  };
+
+  document.getElementById('addProdBtn').onclick = () => {
+    const form = document.getElementById('prodForm');
+    form.style.display = 'block';
+    form.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  document.getElementById('prodForm').onsubmit = async e => {
+    e.preventDefault();
+    let fd = new FormData(e.target);
+    const method = editingProductId ? 'PUT' : 'POST';
+    const url = editingProductId ? `/api/products/${editingProductId}` : '/api/products';
+    const imageInput = document.getElementById('imageInput');
+
+    if (!editingProductId && !imageInput.files.length) {
+      return alert('Please select an image.');
+    }
+
+    await api(url, { method, body: fd });
+
+    editingProductId = null;
+    document.getElementById('prodForm').reset();
+    document.getElementById('prodForm').style.display = 'none';
+    document.querySelector('#prodForm button[type="submit"]').textContent = 'Add Product';
+    if (imagePreviewEl) imagePreviewEl.remove();
+
+    loadProducts();
+socket.emit('productUpdated', { shopId: shop._id, excludeSelf: true });
+showMessage('Changes updated successfully');
+  };
+
+  document.getElementById('addVidBtn').onclick = () => {
+    const form = document.getElementById('vidForm');
+    form.style.display = 'block';
+    form.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  document.getElementById('vidForm').onsubmit = async e => {
+    e.preventDefault();
+    let fd = new FormData(e.target);
+    await api('/api/videos', { method: 'POST', body: fd });
+    document.getElementById('vidForm').reset();
+    loadVideos();
+  };
+
+  document.getElementById('shareLink').onclick = () => {
+    const url = window.location.origin + '/s/' + shop._id;
+    navigator.share ? navigator.share({ url }) : prompt('Share your shop link:', url);
+  };
+
+  async function loadProducts() {
+    const list = await api('/api/products/mine');
+    const c = document.getElementById('prodsList');
+    c.innerHTML = '';
+    list.forEach(p => {
+      const d = document.createElement('div');
+      d.className = 'item-card';
+      d.innerHTML = `
+        <img src="/uploads/${p.image}?t=${Date.now()}" />
+        <div class="item-details">
+          <strong>${p.name}</strong><br>${p.currency}${p.price}
+        </div>
+      `;
+
+      const editBtn = document.createElement('button');
+      editBtn.textContent = 'Edit';
+      editBtn.onclick = () => editProduct(p);
+
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'Delete';
+      delBtn.style = 'margin-left:0.5rem; background:#c00;';
+      delBtn.onclick = () => deleteProduct(p._id);
+
+      d.appendChild(editBtn);
+      d.appendChild(delBtn);
+      c.appendChild(d); // ✅ inside loop
+    });
+  }
+
+  async function loadVideos() {
+    const list = await api('/api/videos/mine');
+    const c = document.getElementById('vidsList');
+    c.innerHTML = '';
+    list.forEach(v => {
+      const d = document.createElement('div');
+      d.className = 'item-card';
+      d.innerHTML = `
+        <video src="/uploads/${v.video}?t=${Date.now()}" controls></video>
+        <div class="item-details">
+          <button onclick="deleteVid('${v._id}')">Delete</button>
+        </div>
+      `;
+      c.appendChild(d);
+    });
+  }
+
+  async function deleteVid(id) {
+  await api('/api/videos/' + id, { method: 'DELETE' });
+  await loadVideos();
+  showMessage('Video deleted successfully');
+}
+
+  async function deleteProduct(id) {
+  if (confirm('Are you sure you want to delete this product?')) {
+    await api('/api/products/' + id, { method: 'DELETE' });
+    socket.emit('productUpdated', { shopId: shop._id, excludeSelf: true });
+    showMessage('Product deleted successfully');
+    await loadProducts();
+  }
+}
+  function editProduct(p) {
+    const form = document.getElementById('prodForm');
+    const imageInput = document.getElementById('imageInput');
+
+    form.style.display = 'block';
+    form.scrollIntoView({ behavior: 'smooth' });
+    document.querySelector('#prodForm button[type="submit"]').textContent = 'Update Product';
+
+    editingProductId = p._id;
+    form.name.value = p.name;
+    form.price.value = p.price;
+    form.currency.value = p.currency;
+
+    if (imagePreviewEl) imagePreviewEl.remove();
+
+    imagePreviewEl = document.createElement('img');
+    imagePreviewEl.src = `/uploads/${p.image}?t=${Date.now()}`;
+    imagePreviewEl.style = 'margin-bottom:0.5rem;width:80px;border-radius:8px;';
+    imageInput.parentNode.insertBefore(imagePreviewEl, imageInput.nextSibling);
+  }
+// Reusable temporary success message banner
+function showMessage(msg, duration = 3000) {
+  let alert = document.createElement('div');
+  alert.textContent = msg;
+  alert.style = `
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0f0;
+    color: #000;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    z-index: 9999;
+  `;
+  document.body.appendChild(alert);
+  setTimeout(() => alert.remove(), duration);
+}
+
+// Listen for real-time update from server
+socket.on('productUpdated', () => {
+  loadProducts();
+  showMessage('Changes updated successfully');
+});
+
+  async function loadReviews() {
+    const res = await fetch(`/api/reviews/${shop._id}`);
+    const reviews = await res.json();
+    const container = document.createElement('div');
+    container.innerHTML = '<h3>Customer Reviews</h3>';
+    reviews.forEach(r => {
+      const div = document.createElement('div');
+      div.style.margin = '1rem 0';
+      div.innerHTML = `<strong>${r.customerName}</strong> - ⭐${r.rating}<br>${r.review}`;
+      container.appendChild(div);
+    });
+    document.getElementById('shopView').appendChild(container);
+  }
+
+  window.onload = () => {
+    loadShop();
+
+    if (!document.getElementById('cancelBtn')) {
+      const cancelBtn = document.createElement('button');
+      cancelBtn.type = 'button';
+      cancelBtn.id = 'cancelBtn';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.style = 'margin-left: 1rem; background: #555;';
+      cancelBtn.onclick = () => {
+        editingProductId = null;
+        document.getElementById('prodForm').reset();
+        document.getElementById('prodForm').style.display = 'none';
+        if (imagePreviewEl) imagePreviewEl.remove();
+        document.querySelector('#prodForm button[type="submit"]').textContent = 'Add Product';
+      };
+      document.getElementById('prodForm').appendChild(cancelBtn);
+    }
+  };
+</script>
+</body>
+</html>

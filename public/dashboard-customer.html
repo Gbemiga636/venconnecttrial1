@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vendor Dashboard | VenConnect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lemon&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #25004d, #4c0099, #000000);
+      --text-color: #fff;
+      --accent: #a05cff;
+      --frosted: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.15);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-color);
+    }
+
+   .search-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+  .search-wrapper {
+  position: relative;
+  width: 70%;
+  max-width: 350px;
+  margin: 0 auto;
+}
+
+    .search-wrapper input {
+      width: 100%;
+      padding: 0.9rem 1rem 0.9rem 2.8rem;
+      border-radius: 40px;
+      border: none;
+      font-size: 1rem;
+      background: var(--frosted);
+      color: white;
+      outline: none;
+      border: 1px solid var(--border);
+    }
+
+    .search-wrapper i {
+      position: absolute;
+      top: 50%;
+      left: 1rem;
+      transform: translateY(-50%);
+      color: #ccc;
+    }
+
+    h2 {
+      font-family: 'Lemon', cursive;
+      padding: 0.5rem 1rem 1rem;
+      font-size: 1.4rem;
+      text-align: center;
+    }
+
+    .shops-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 0 1rem 6rem;
+    }
+
+    .shop-card {
+      background: var(--frosted);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 1rem;
+      display: flex;
+      gap: 1rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .shop-card img {
+      width: 70px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    .shop-details {
+      flex: 1;
+    }
+
+    .shop-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .shop-location, .shop-bio, .shop-rating {
+      font-size: 0.9rem;
+      opacity: 0.85;
+    }
+
+    nav.bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #0e001f;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0.8rem 0;
+      z-index: 999;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: white;
+      font-size: 0.75rem;
+      opacity: 0.6;
+      text-decoration: none;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+      opacity: 1;
+    }
+
+    .nav-item i {
+      font-size: 1.3rem;
+      margin-bottom: 0.2rem;
+    }
+
+    @media (max-width: 768px) {
+      .shop-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .search-wrapper input {
+        font-size: 0.95rem;
+        padding-left: 2.5rem;
+      }
+
+      .shop-card img {
+        width: 60px;
+        height: 60px;
+      }
+* {
+  box-sizing: border-box;
+}
+
+      .shop-name {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="search-bar">
+    <div class="search-wrapper">
+      <i class="fas fa-search"></i>
+      <input type="text" id="searchInput" placeholder="Search shops or items...">
+    </div>
+  </div>
+
+  <h2>Explore Shops in the Market</h2>
+  <div class="shops-container" id="shopsContainer">
+    <!-- Dynamic shop cards will be inserted here -->
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="dashboard-customer.html" class="nav-item active"><i class="fas fa-house"></i>Home</a>
+    <a href="top-skizzy.html" class="nav-item"><i class="fas fa-trophy"></i>Skizzy Vendor</a>
+    <a href="explore-customer.html" class="nav-item"><i class="fas fa-video"></i>Explore</a>
+    <a href="inbox-customer.html" class="nav-item"><i class="fas fa-message"></i>Inbox</a>
+    <a href="settings-customer.html" class="nav-item"><i class="fas fa-gear"></i>Settings</a>
+  </nav>
+
+<script>
+  async function fetchShops(query = '') {
+    const res = await fetch('/api/shops?search=' + encodeURIComponent(query));
+    const data = await res.json();
+    const container = document.getElementById('shopsContainer');
+    container.innerHTML = '';
+
+    data.forEach(shop => {
+      const logo = shop.shopLogo ? shop.shopLogo : 'default.png';
+      const shopId = encodeURIComponent(shop._id);
+      const cardWrapper = document.createElement('a');
+      cardWrapper.href = `shop-view-customer.html?shopId=${shopId}`;
+      cardWrapper.style.textDecoration = 'none';
+      cardWrapper.style.color = 'inherit';
+
+      const card = document.createElement('div');
+      card.className = 'shop-card';
+
+      card.innerHTML = `
+        <img src="/uploads/${logo}" alt="${shop.shopName}" />
+        <div class="shop-details">
+          <div class="shop-name">
+  ${shop.shopName}
+  ${shop.kycVerified ? '<i class="fas fa-check-circle" title="Verified" style="color: #1da1f2; margin-left: 6px;"></i>' : ''}
+</div>
+          <div class="shop-location">📍 ${shop.location}</div>
+          <div class="shop-bio">${shop.bio}</div>
+          <div class="shop-rating">⭐ ${shop.rating || 'N/A'} / 5</div>
+        </div>
+      `;
+
+      cardWrapper.appendChild(card);
+      container.appendChild(cardWrapper);
+    });
+  }
+
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    fetchShops(e.target.value);
+  });
+
+  fetchShops(); // load on start
+</script>
+
+</body>
+</html>

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel | VenConnect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lemon&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #25004d, #4c0099, #000000);
+      --text-color: #fff;
+      --accent: #a05cff;
+      --frosted: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.15);
+      --danger: #ff4d4d;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-color);
+    }
+
+    h2 {
+      font-family: 'Lemon', cursive;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .vendor-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    .vendor-card {
+      background: var(--frosted);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .vendor-card img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .vendor-info {
+      flex: 1;
+    }
+
+    .vendor-info .name {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .vendor-info .status {
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+.top-actions button {
+  font-size: 0.9rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--frosted);
+  color: white;
+  margin: 0 0.4rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.top-actions .primary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.top-actions .danger-button {
+  background: var(--danger);
+  color: white;
+  border: none;
+}
+
+.top-actions button i {
+  margin-right: 0.4rem;
+}
+
+    .vendor-actions button {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: white;
+      padding: 0.4rem 0.7rem;
+      margin-left: 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .vendor-actions button:hover {
+      background: var(--frosted);
+    }
+.new-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: orange;
+  color: black;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border-radius: 5px;
+}
+
+    .vendor-actions .danger {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+  </style>
+<style>
+  button:hover {
+    opacity: 0.9;
+  }
+</style>
+</head>
+<body>
+<script>
+  if (sessionStorage.getItem("isAdmin") !== "true") {
+    window.location.href = "/login.html";
+  }
+</script>
+  <h2>Admin Dashboard</h2>
+<div style="text-align:center; margin-bottom: 1rem;">
+<div class="top-actions" style="text-align:center; margin-bottom: 1rem;">
+  <button class="primary" onclick="showVendorPanel()">
+    <i class="fas fa-store"></i> Vendors
+  </button>
+  <button class="primary" onclick="showReports()">
+    <i class="fas fa-flag"></i> View Reports
+  </button>
+  <button onclick="logout()" class="danger-button">
+    <i class="fas fa-sign-out-alt"></i> Logout
+  </button>
+</div>
+</div>
+</div>
+
+<!-- Add to <body> after <h2> -->
+<div style="text-align: center; padding: 0 1rem 1rem;">
+  <input type="text" id="searchInput" placeholder="Search vendors..." style="padding: 0.6rem 1rem; border-radius: 20px; border: none; width: 90%; max-width: 400px; font-size: 1rem;">
+</div>
+
+<div class="vendor-list" id="vendorList"></div>
+<div class="vendor-list" id="reportList" style="display:none;"></div>
+
+<!-- Modal -->
+<div id="vendorModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
+  <div style="background:#111; padding:2rem; border-radius:10px; max-width:500px; width:90%; color:white; position:relative;">
+    <button onclick="closeModal()" style="position:absolute; top:10px; right:15px; background:none; border:none; font-size:1.5rem; color:white;">&times;</button>
+    <h3 id="modalShopName"></h3>
+    <p><strong>Email:</strong> <span id="modalEmail"></span></p>
+    <p><strong>Location:</strong> <span id="modalLocation"></span></p>
+    <p><strong>Bio:</strong> <span id="modalBio"></span></p>
+    <p><strong>KYC:</strong> <span id="modalKYCStatus"></span></p>
+    <p><strong>Blocked:</strong> <span id="modalBlocked"></span></p>
+<div id="kycDetails" style="margin-top: 1rem;">
+  <p><strong>Full Name:</strong> <span id="modalKYCName"></span></p>
+  <p><strong>DOB:</strong> <span id="modalKYCDob"></span></p>
+  <div style="display:flex; gap:1rem; flex-wrap: wrap;">
+    <div>
+      <p>Selfie</p>
+     <a id="linkKYCselfie" target="_blank">
+  <img id="modalKYCselfie" style="width:100px;border-radius:8px;">
+</a>
+    </div>
+    <div>
+      <p>ID Front</p>
+      <a id="linkKYCfront" target="_blank">
+  <img id="modalKYCfront" style="width:100px;border-radius:8px;">
+</a>
+    </div>
+    <div>
+      <p>ID Back</p>
+      <a id="linkKYCback" target="_blank">
+  <img id="modalKYCback" style="width:100px;border-radius:8px;">
+</a>
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+
+  </div>
+
+<script>
+let allVendors = [];
+let currentPage = 1;
+const vendorsPerPage = 5;
+
+async function loadVendors() {
+  const res = await fetch('/api/admin/vendors');
+  allVendors = await res.json();
+  renderVendors(allVendors);
+}
+
+function renderVendors(vendors) {
+  const container = document.getElementById('vendorList');
+  container.innerHTML = '';
+
+  const start = (currentPage - 1) * vendorsPerPage;
+  const end = start + vendorsPerPage;
+  const paginatedVendors = vendors.slice(start, end);
+
+  paginatedVendors.forEach(v => {
+    const card = document.createElement('div');
+    card.className = 'vendor-card';
+card.style.position = 'relative';
+
+    card.innerHTML = `
+      <img src="/uploads/${v.shopLogo || 'default.png'}" alt="${v.shopName}">
+      <div class="vendor-info">
+        <div class="name">${v.shopName} ${v.kycVerified ? '<i class="fas fa-badge-check" title="Verified" style="color: var(--accent); margin-left: 5px;"></i>' : ''}</div>
+        <div class="status">KYC: ${v.kycStatus || 'Not submitted'} | ${v.blocked ? '🚫 Blocked' : '✅ Active'}</div>
+      </div>
+      <div class="vendor-actions">
+        <button onclick="viewVendor('${v._id}')">View</button>
+        ${!v.kycVerified && v.kycStatus === 'pending' ? `<button onclick="verifyKYC('${v._id}', true)">Approve</button><button class="danger" onclick="verifyKYC('${v._id}', false)">Reject</button>` : ''}
+        <button onclick="toggleBlock('${v._id}', ${v.blocked})">${v.blocked ? 'Unblock' : 'Block'}</button>
+        <button class="danger" onclick="deleteVendor('${v._id}')">Delete</button>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  renderPagination(vendors.length);
+}
+function renderPagination(totalItems) {
+  const totalPages = Math.ceil(totalItems / vendorsPerPage);
+  let pagination = document.getElementById('pagination');
+
+  if (!pagination) {
+    pagination = document.createElement('div');
+    pagination.id = 'pagination';
+    document.getElementById('vendorList').after(pagination);
+  }
+
+  pagination.style.textAlign = 'center';
+  pagination.style.marginTop = '1rem';
+  pagination.style.color = 'white';
+
+  pagination.innerHTML = `
+    <button onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''}>⬅ Prev</button>
+    <span style="margin: 0 1rem;">Page ${currentPage} of ${totalPages}</span>
+    <button onclick="changePage(1)" ${currentPage === totalPages ? 'disabled' : ''}>Next ➡</button>
+  `;
+}
+function changePage(direction) {
+  currentPage += direction;
+  renderVendors(allVendors);
+}
+
+async function verifyKYC(userId, approve) {
+  await fetch(`/api/admin/kyc/${userId}/${approve ? 'approve' : 'reject'}`, { method: 'PATCH' });
+  loadVendors();
+}
+
+async function toggleBlock(userId, isBlocked) {
+  await fetch(`/api/admin/block/${userId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ block: !isBlocked }),
+    headers: { 'Content-Type': 'application/json' }
+  });
+  loadVendors();
+}
+
+async function deleteVendor(userId) {
+  if (confirm('Delete this vendor? This is permanent.')) {
+    await fetch(`/api/admin/delete/${userId}`, { method: 'DELETE' });
+    loadVendors();
+  }
+}
+function logout() {
+  fetch('/logout', { method: 'POST' })
+    .then(() => {
+      sessionStorage.clear();
+      window.location.href = '/login.html';
+    });
+}
+async function showReports() {
+  document.getElementById('vendorList').style.display = 'none';
+  document.getElementById('reportList').style.display = 'block';
+  document.getElementById('pagination').style.display = 'none';
+  const res = await fetch('/api/admin/reports', {
+    credentials: 'include' // ✅ Required to send token cookie
+  });
+  const reports = await res.json();
+const unread = reports.filter(r => !r.read).length;
+updateReportCountBadge(unread);
+
+  const container = document.getElementById('reportList');
+  container.innerHTML = '';
+
+  reports.forEach(r => {
+  const card = document.createElement('div');
+  card.className = 'vendor-card';
+  card.style.position = 'relative';
+const newBadge = !r.read ? `<span class="new-badge">NEW</span>` : '';
+
+card.innerHTML = `
+  ${newBadge}
+  <div class="vendor-info">
+    <div class="name">Reported: ${r.reportedUserId?.shopName || r.reportedUserId?.name || 'N/A'}</div>
+    <div class="status">
+      <strong>By:</strong> ${r.reporterId?.name || 'N/A'}<br/>
+      <strong>Reason:</strong> ${r.reason}<br/>
+      <strong>Message:</strong> ${r.message}<br/>
+      <strong>Date:</strong> ${new Date(r.createdAt).toLocaleString()}
+    </div>
+  </div>
+  <div class="vendor-actions">
+    <button onclick="blockReportedUser('${r.reportedUserId?._id}')">Block</button>
+    <button onclick="resolveReport('${r._id}')">Mark Resolved</button>
+    <button class="danger" onclick="deleteReport('${r._id}')">Delete</button>
+  </div>
+`;
+  container.appendChild(card);
+});
+}
+async function blockReportedUser(userId) {
+  if (confirm('Block this user?')) {
+    await fetch(`/api/admin/block/${userId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ block: true }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    alert('User blocked.');
+    showReports();
+  }
+}
+
+async function resolveReport(reportId) {
+  await fetch(`/api/admin/reports/${reportId}/resolve`, { method: 'PATCH' });
+  alert('Marked as resolved.');
+  showReports();
+}
+
+async function deleteReport(reportId) {
+  if (confirm('Delete this report?')) {
+    await fetch(`/api/admin/reports/${reportId}`, { method: 'DELETE' });
+    showReports();
+  }
+}
+function updateReportCountBadge(count) {
+  const btn = document.querySelector('button[onclick="showReports()"]');
+  if (btn) {
+    btn.innerHTML = `<i class="fas fa-flag"></i> View Reports${count > 0 ? ` (${count})` : ''}`;
+  }
+}
+
+function showVendorPanel() {
+  document.getElementById('vendorList').style.display = 'flex';
+  document.getElementById('reportList').style.display = 'none';
+  document.getElementById('pagination').style.display = 'block';
+}
+async function viewVendor(userId) {
+  const vendor = allVendors.find(v => v._id === userId);
+  if (!vendor) return;
+
+  document.getElementById('modalShopName').innerText = vendor.shopName;
+  document.getElementById('modalEmail').innerText = vendor.email || 'N/A';
+  document.getElementById('modalLocation').innerText = vendor.location || 'N/A';
+  document.getElementById('modalBio').innerText = vendor.bio || 'N/A';
+  document.getElementById('modalKYCStatus').innerText = vendor.kycStatus || 'Not submitted';
+  document.getElementById('modalBlocked').innerText = vendor.blocked ? 'Yes' : 'No';
+
+  try {
+    const res = await fetch(`/api/kyc/${userId}`);
+    if (res.ok) {
+      const kyc = await res.json();
+      document.getElementById('modalKYCName').innerText = kyc.name || 'N/A';
+      document.getElementById('modalKYCDob').innerText = kyc.dob || 'N/A';
+      document.getElementById('modalKYCselfie').src = `/uploads/${kyc.selfie}`;
+      document.getElementById('modalKYCfront').src = `/uploads/${kyc.idFront}`;
+      document.getElementById('modalKYCback').src = `/uploads/${kyc.idBack}`;
+document.getElementById('linkKYCselfie').href = `/uploads/${kyc.selfie}`;
+document.getElementById('linkKYCfront').href = `/uploads/${kyc.idFront}`;
+document.getElementById('linkKYCback').href = `/uploads/${kyc.idBack}`;
+      document.getElementById('kycDetails').style.display = 'block';
+    } else {
+      document.getElementById('kycDetails').style.display = 'none';
+    }
+  } catch {
+    document.getElementById('kycDetails').style.display = 'none';
+  }
+
+  document.getElementById('vendorModal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('vendorModal').style.display = 'none';
+}
+
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  const term = e.target.value.toLowerCase();
+  const filtered = allVendors.filter(v =>
+    v.shopName?.toLowerCase().includes(term) ||
+    v.email?.toLowerCase().includes(term) ||
+    v.bio?.toLowerCase().includes(term)
+  );
+  renderVendors(filtered);
+});
+
+loadVendors();
+</script>
+<!-- admin.html -->
+</body>
+</html>

@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Top Skizzy Vendors | VenConnect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lemon&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+ <style>
+  :root {
+    --bg-gradient: linear-gradient(135deg, #25004d, #4c0099, #000000);
+    --text-color: #fff;
+    --accent: #a05cff;
+    --frosted: rgba(255,255,255,0.08);
+    --border: rgba(255,255,255,0.15);
+  }
+
+  html {
+    font-size: 16px;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-color);
+  }
+
+  h2 {
+    font-family: 'Lemon', cursive;
+    padding: 1.5rem 1rem 1rem;
+    font-size: 2rem;
+    text-align: center;
+  }
+
+  .vendors-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+  }
+
+  .flip-card {
+    background: transparent;
+    width: 100%;
+    aspect-ratio: 5 / 7;
+    perspective: 1000px;
+  }
+
+  .flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+  }
+
+  .flip-card.flipped .flip-inner {
+    transform: rotateY(180deg);
+  }
+
+  .flip-front,
+  .flip-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--frosted);
+    backdrop-filter: blur(10px);
+  }
+
+  .flip-front {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  canvas.scratch {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .flip-back {
+    transform: rotateY(180deg);
+    padding: 1rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .vendor-logo {
+  width: clamp(50px, 22%, 80px);
+    max-width: 80px;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 auto 0.8rem;
+  }
+
+  .vendor-name {
+    font-weight: 600;
+    font-size: 1.2rem;
+  }
+
+  .vendor-info {
+    font-size: 0.9rem;
+    opacity: 0.85;
+    margin-top: 0.3rem;
+  }
+
+  nav.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #0e001f;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0.8rem 0;
+    z-index: 999;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    font-size: 0.75rem;
+    opacity: 0.6;
+    text-decoration: none;
+  }
+
+  .nav-item.active {
+    color: var(--accent);
+    opacity: 1;
+  }
+
+  .nav-item i {
+    font-size: 1.3rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .puzzle-header {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    font-size: 1.3rem;
+    color: var(--accent);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+
+  #puzzleContainer {
+    width: 100%;
+    max-width: 420px;
+    margin: 1rem auto;
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    overflow: hidden;
+  }
+
+  .puzzle-tile {
+    box-shadow: 0 0 6px rgba(0,0,0,0.5);
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  img.puzzle-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ------------------ MEDIA QUERIES ------------------ */
+  @media (max-width: 768px) {
+    h2 {
+      font-size: 1.6rem;
+    }
+
+    .vendor-name {
+      font-size: 1rem;
+    }
+.claim-textarea {
+  background: rgba(255,255,255,0.06);
+  color: white;
+  font-size: 0.95rem;
+}
+
+.submit-claim-btn:hover {
+  background-color: #8b4fff;
+}
+
+    .vendor-info {
+      font-size: 0.8rem;
+    }
+
+    .nav-item i {
+      font-size: 1.2rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    h2 {
+      font-size: 1.4rem;
+    }
+
+    .vendors-container {
+      grid-template-columns: 1fr;
+    }
+
+    .vendor-logo {
+      max-width: 60px;
+    }
+
+    .nav-item {
+      font-size: 0.65rem;
+    }
+
+    .nav-item i {
+      font-size: 1rem;
+    }
+
+    .puzzle-header {
+      font-size: 1.1rem;
+    }
+  }
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+<header class="puzzle-header">
+  <i class="fas fa-puzzle-piece"></i>
+  <span>You Play, We Pay</span>
+</header>
+  <!-- PUZZLE SECTION START -->
+  <div id="puzzleRoot"></div>
+  <!-- PUZZLE SECTION END -->
+
+
+  <h2>Top Skizzy Vendors 🏆</h2>
+  <div class="vendors-container" id="vendorsContainer"></div>
+
+  <nav class="bottom-nav">
+    <a href="dashboard-customer.html" class="nav-item "><i class="fas fa-house"></i>Home</a>
+    <a href="top-skizzy.html" class="nav-item active"><i class="fas fa-trophy"></i>Skizzy Vendor</a>
+    <a href="explore-customer.html" class="nav-item"><i class="fas fa-video"></i>Explore</a>
+    <a href="inbox-customer.html" class="nav-item"><i class="fas fa-message"></i>Inbox</a>
+    <a href="settings-customer.html" class="nav-item"><i class="fas fa-gear"></i>Settings</a>
+  </nav>
+
+<script>
+  const STORAGE_KEY = 'openedSkizzyVendors';
+
+  function getOpenedVendors() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  function markVendorAsOpened(vendorId) {
+    const opened = getOpenedVendors();
+    if (!opened.includes(vendorId)) {
+      opened.push(vendorId);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(opened));
+    }
+  }
+
+  async function loadTopVendors() {
+  const res = await fetch('/api/vendors/top');
+  let vendors = await res.json();
+
+  // Fallback: Try fetch all vendors if top returns none
+  if (!Array.isArray(vendors) || vendors.length === 0) {
+    const altRes = await fetch('/api/vendors/all');
+    const allVendors = await altRes.json();
+    vendors = (Array.isArray(allVendors) ? allVendors : []).sort((a, b) => b.likes - a.likes);
+  }
+
+  const opened = getOpenedVendors();
+  const container = document.getElementById('vendorsContainer');
+  container.innerHTML = '';
+
+  if (vendors.length === 0) {
+    container.innerHTML = `<p style="text-align:center;opacity:0.7;">No vendors available yet.</p>`;
+    return;
+  }
+
+  vendors.forEach(v => {
+    const card = document.createElement('div');
+    card.className = 'flip-card';
+    if (opened.includes(v._id)) card.classList.add('flipped');
+
+    const inner = document.createElement('div');
+    inner.className = 'flip-inner';
+
+    const front = document.createElement('div');
+    front.className = 'flip-front';
+
+    const canvas = document.createElement('canvas');
+    canvas.className = 'scratch';
+    front.appendChild(canvas);
+
+    const back = document.createElement('div');
+    back.className = 'flip-back';
+    back.innerHTML = `
+      <img src="/uploads/${v.shopLogo}" class="vendor-logo" />
+      <div class="vendor-name">
+        ${v.shopName}
+        ${v.kycVerified ? '<i class="fas fa-check-circle" style="color:#1da1f2; margin-left: 6px;" title="Verified"></i>' : ''}
+      </div>
+      <div class="vendor-info">📍 ${v.location || 'Unknown'}</div>
+      <div class="vendor-info">🔥 ${v.likes} Likes</div>
+    `;
+
+    inner.appendChild(front);
+    inner.appendChild(back);
+    card.appendChild(inner);
+    container.appendChild(card);
+
+    if (!opened.includes(v._id)) {
+      setupScratch(canvas, () => {
+        card.classList.add('flipped');
+        markVendorAsOpened(v._id);
+      });
+    }
+  });
+}
+  // PUZZLE & CLAIM LOGIC START
+function getPuzzleDifficulty() {
+  return 'impossible'; // Change to 'easy' or 'impossible' here manually
+}
+
+  function renderSteps() {
+    const steps = `
+      <div id="puzzleSteps">
+        <p>📱 Step 1: Check our social media platform for the picture</p>
+        <p>🧩 Step 2: Play the puzzle</p>
+        <p>🎉 Step 3: Solve it</p>
+        <p>📬 Step 4: Send your claim to admin</p>
+        <p>💰 Step 5: Await payment</p>
+      </div>`;
+    document.getElementById('puzzleRoot').insertAdjacentHTML('beforeend', steps);
+  }
+
+function setupPuzzleClaimFlow() {
+  const root = document.getElementById('puzzleRoot');
+
+  // Remove existing claim button if any
+  const existingBtn = root.querySelector('.claim-btn');
+  if (existingBtn) existingBtn.remove();
+
+  const textarea = document.createElement('textarea');
+  textarea.className = 'claim-textarea';
+  textarea.placeholder = 'Enter purchase details and account number...';
+  textarea.style.width = '100%';
+  textarea.style.marginTop = '1rem';
+  textarea.style.padding = '0.8rem';
+  textarea.style.borderRadius = '8px';
+  textarea.style.border = '1px solid #aaa';
+  textarea.style.resize = 'vertical';
+  textarea.rows = 4;
+
+  const btn = document.createElement('button');
+  btn.className = 'submit-claim-btn';
+  btn.textContent = 'Submit Claim';
+  btn.style.marginTop = '0.8rem';
+  btn.style.padding = '0.6rem 1rem';
+  btn.style.border = 'none';
+  btn.style.borderRadius = '6px';
+  btn.style.backgroundColor = 'var(--accent)';
+  btn.style.color = '#fff';
+  btn.style.fontWeight = '600';
+  btn.style.cursor = 'pointer';
+
+  btn.addEventListener('click', async () => {
+    const message = textarea.value.trim();
+    if (!message) {
+      alert('Please enter purchase details and account number.');
+      return;
+    }
+
+    const res = await fetch('/api/puzzle-win', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message })
+    });
+
+    if (res.ok) {
+      alert('Your claim was sent successfully!');
+
+      // Optional: check for admin response
+      const messagesRes = await fetch('/api/puzzle-claim/messages');
+      if (messagesRes.ok) {
+        const data = await messagesRes.json();
+        const latestReply = data.messages.find(m => m.fromAdmin);
+        if (latestReply) {
+          alert('Admin replied: ' + latestReply.message);
+        }
+      }
+    } else {
+      alert('Failed to send claim. Please try again.');
+    }
+  });
+
+  root.appendChild(textarea);
+  root.appendChild(btn);
+}
+
+
+function setupPuzzle(imageUrl, difficulty, onWin) {
+  const container = document.getElementById('puzzleContainer');
+  container.innerHTML = '';
+
+  const gridSize = 3; // 3x3 puzzle
+  const tileSize = Math.floor(container.offsetWidth / gridSize);
+  const emptyTile = { row: gridSize - 1, col: gridSize - 1 };
+  const tiles = [];
+
+  const img = new Image();
+  img.src = imageUrl.startsWith('/uploads/') ? imageUrl : `/uploads/${imageUrl}`;
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    const tileSize = Math.floor(Math.min(img.width, img.height) / gridSize);
+canvas.width = tileSize * gridSize;
+canvas.height = tileSize * gridSize;
+window.__tileSize = tileSize; // So positionTiles uses same
+
+// Resize container to match canvas size
+container.style.width = canvas.width + 'px';
+container.style.height = canvas.height + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+
+    for (let row = 0; row < gridSize; row++) {
+      for (let col = 0; col < gridSize; col++) {
+        if (row === emptyTile.row && col === emptyTile.col) continue;
+
+        const tile = document.createElement('canvas');
+        tile.width = tileSize;
+        tile.height = tileSize;
+        const tctx = tile.getContext('2d');
+        tctx.drawImage(
+          canvas,
+          col * tileSize, row * tileSize,
+          tileSize, tileSize,
+          0, 0, tileSize, tileSize
+        );
+
+        tile.dataset.row = row;
+        tile.dataset.col = col;
+        tile.className = 'puzzle-tile';
+        tile.style.position = 'absolute';
+        tile.style.width = tileSize + 'px';
+        tile.style.height = tileSize + 'px';
+        tile.style.transition = 'all 0.2s ease';
+
+        container.appendChild(tile);
+        tiles.push(tile);
+      }
+    }
+
+    scrambleTiles(tiles, emptyTile, gridSize, difficulty);
+    positionTiles(tiles);
+
+    tiles.forEach(tile => {
+      tile.addEventListener('click', () => {
+        const r = parseInt(tile.dataset.row);
+        const c = parseInt(tile.dataset.col);
+        const dr = Math.abs(r - emptyTile.row);
+        const dc = Math.abs(c - emptyTile.col);
+
+        if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
+          tile.dataset.row = emptyTile.row;
+          tile.dataset.col = emptyTile.col;
+          emptyTile.row = r;
+          emptyTile.col = c;
+          positionTiles(tiles);
+
+          if (isPuzzleSolved(tiles, gridSize)) {
+            onWin?.();
+          }
+        }
+      });
+    });
+  };
+}
+
+function scrambleTiles(tiles, emptyTile, size, difficulty) {
+  const positions = [];
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      if (row === emptyTile.row && col === emptyTile.col) continue;
+      positions.push({ row, col });
+    }
+  }
+
+  if (difficulty === 'impossible') {
+    // Swap last 2 tiles (makes it unsolvable)
+    [positions[positions.length - 1], positions[positions.length - 2]] =
+      [positions[positions.length - 2], positions[positions.length - 1]];
+  } else {
+    // Shuffle
+    for (let i = positions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [positions[i], positions[j]] = [positions[j], positions[i]];
+    }
+  }
+
+  tiles.forEach((tile, i) => {
+    tile.dataset.row = positions[i].row;
+    tile.dataset.col = positions[i].col;
+  });
+}
+
+function positionTiles(tiles) {
+  const tileSize = window.__tileSize || 100;
+  tiles.forEach(tile => {
+    const row = parseInt(tile.dataset.row);
+    const col = parseInt(tile.dataset.col);
+    tile.style.left = col * tileSize + 'px';
+    tile.style.top = row * tileSize + 'px';
+  });
+}
+
+function isPuzzleSolved(tiles, gridSize) {
+  let index = 0;
+  for (let row = 0; row < gridSize; row++) {
+    for (let col = 0; col < gridSize; col++) {
+      if (row === gridSize - 1 && col === gridSize - 1) continue;
+      const tile = tiles[index++];
+      if (parseInt(tile.dataset.row) !== row || parseInt(tile.dataset.col) !== col) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+  async function initPuzzleSection() {
+    const difficulty = getPuzzleDifficulty();
+    const container = document.createElement('div');
+container.id = 'puzzleContainer';
+container.style.border = '2px solid var(--accent)';
+container.style.borderRadius = '10px';
+container.style.minHeight = '320px'; // Ensures space even before image loads
+container.style.background = 'rgba(255,255,255,0.03)';
+container.style.position = 'relative';
+container.style.overflow = 'hidden';
+
+document.getElementById('puzzleRoot').append(container);
+
+    renderSteps();
+
+    // Example puzzle setup: using your image and custom logic
+    setupPuzzle('you_play_we_pay.jpg', difficulty, () => {
+      confetti.create(document.getElementById('confettiCanvas'), { resize:true })();
+      setupPuzzleClaimFlow();
+    });
+  }
+
+  // append confetti canvas
+  const cf = document.createElement('canvas');
+  cf.id = 'confettiCanvas';
+  document.body.append(cf);
+
+  initPuzzleSection();
+  // PUZZLE & CLAIM LOGIC END
+
+  function setupScratch(canvas, onReveal) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  canvas.width = w * window.devicePixelRatio;
+  canvas.height = h * window.devicePixelRatio;
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  ctx.fillStyle = '#888';
+  ctx.fillRect(0, 0, w, h);
+
+  let isDrawing = false;
+  let revealed = 0;
+
+  function draw(e) {
+    if (!isDrawing) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(x, y, 20, 0, Math.PI * 2);
+    ctx.fill();
+
+    revealed++;
+    if (revealed > 50) onReveal();
+  }
+
+  canvas.addEventListener('mousedown', () => isDrawing = true);
+  canvas.addEventListener('mouseup', () => isDrawing = false);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('touchstart', () => isDrawing = true);
+  canvas.addEventListener('touchend', () => isDrawing = false);
+  canvas.addEventListener('touchmove', draw);
+}
+
+  loadTopVendors();
+</script>
+</body>
+</html>

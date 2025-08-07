@@ -1,0 +1,888 @@
+<!-- FILE: inbox.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inbox | VenConnect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lemon&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1"></script>
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #25004d, #4c0099, #000000);
+      --text-color: #fff;
+      --accent: #a05cff;
+      --frosted: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.15);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-color);
+      overflow-x: hidden;
+    }
+
+    .header {
+      text-align: center;
+      padding: 1rem;
+      font-family: 'Lemon', cursive;
+      font-size: 1.5rem;
+    }
+
+    .chat-list {
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      gap: 1rem;
+    }
+
+    .chat-card {
+      background: var(--frosted);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .chat-card img {
+      width: 55px;
+      height: 55px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    .chat-info {
+      flex: 1;
+    }
+
+    .chat-name {
+      font-weight: 600;
+    }
+
+    .chat-last-msg {
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+
+    .unread {
+      background: var(--accent);
+      border-radius: 50%;
+      width: 10px;
+      height: 10px;
+    }
+
+    .floating-btn {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      width: 55px;
+      height: 55px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      cursor: pointer;
+    }
+
+    .search-modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .search-box {
+      background: #1e0033;
+      padding: 2rem;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 400px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .search-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .search-wrapper input {
+      width: 100%;
+      padding: 0.9rem 1rem 0.9rem 2.8rem;
+      border-radius: 40px;
+      border: none;
+      font-size: 1rem;
+      background: var(--frosted);
+      color: white;
+      outline: none;
+      border: 1px solid var(--border);
+      box-sizing: border-box;
+    }
+
+    .search-wrapper i {
+      position: absolute;
+      top: 50%;
+      left: 1rem;
+      transform: translateY(-50%);
+      color: #ccc;
+      pointer-events: none;
+    }
+.message.selected {
+  outline: 2px solid red;
+}
+
+    .result-item {
+      background: var(--frosted);
+      border: 1px solid var(--border);
+      padding: 0.6rem 1rem;
+      margin-top: 0.6rem;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .chat-view {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg-gradient);
+      z-index: 3000;
+    }
+
+    .chat-header {
+      padding: 1rem;
+      background: #0e001f;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .message {
+      max-width: 70%;
+      padding: 0.7rem 1rem;
+      border-radius: 20px;
+    }
+
+    .me {
+      align-self: flex-end;
+      background: var(--accent);
+    }
+
+    .them {
+      align-self: flex-start;
+      background: var(--frosted);
+      border: 1px solid var(--border);
+    }
+
+    .chat-input {
+      display: flex;
+      padding: 0.7rem;
+      border-top: 1px solid var(--border);
+      gap: 0.5rem;
+      align-items: center;
+      background: #0e001f;
+    }
+.inbox-warning {
+  background: rgba(255, 255, 0, 0.1);
+  border-left: 4px solid #ffc107;
+  color: #ffeb3b;
+  padding: 0.75rem 1rem;
+  margin: 0 1rem 1rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.inbox-warning i {
+  color: #ffc107;
+  font-size: 1.2rem;
+}
+
+    .chat-input input {
+      flex: 1;
+      padding: 0.7rem;
+      border-radius: 20px;
+      border: none;
+      outline: none;
+      background: var(--frosted);
+      color: white;
+    }
+
+    .chat-input i {
+      cursor: pointer;
+    }
+#recordingIndicator {
+  margin-left: 5px;
+  animation: blink 1s steps(2, start) infinite;
+}
+
+@keyframes blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+    nav.bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #0e001f;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0.8rem 0;
+      z-index: 999;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: white;
+      font-size: 0.75rem;
+      opacity: 0.6;
+      text-decoration: none;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+      opacity: 1;
+    }
+
+    .nav-item i {
+      font-size: 1.3rem;
+      margin-bottom: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">Your Inbox</div>
+<div class="inbox-warning">
+  <i class="fas fa-exclamation-triangle"></i>
+  Never pay upfront without confirming the product delivery process. VenConnect is not responsible for payments.Thank you!
+</div>
+  <div class="chat-list" id="chatList"></div>
+
+  <div class="floating-btn" id="openSearch" title="New chat" aria-label="Open Search"><i class="fas fa-plus"></i></div>
+
+  <div class="search-modal" id="searchModal">
+    <div class="search-box">
+      <div class="search-wrapper">
+        <i class="fas fa-search"></i>
+        <input type="text" id="vendorSearch" placeholder="Search shop name, location, bio...">
+      </div>
+      <div id="searchResults"></div>
+    </div>
+  </div>
+
+  <div class="chat-view" id="chatView">
+    <div class="chat-header">
+      <button onclick="closeChat()" aria-label="Close chat">←</button>
+      <div id="chatVendorName">Vendor Name</div>
+      <div style="position:relative;">
+  <i class="fas fa-ellipsis-v" title="More options" onclick="toggleChatMenu()"></i>
+  <div id="chatMenu" style="position:absolute; top:1.8rem; right:0; background:#222; border:1px solid var(--border); border-radius:6px; display:none; min-width:140px; z-index:10;">
+   <!--- <div onclick="startSelectMode()" style="padding:0.5rem; cursor:pointer;">Select Chat</div>-->
+    <div onclick="clearChat()" style="padding:0.5rem; cursor:pointer;">Clear Chat</div>
+    <div onclick="reportChat()" style="padding:0.5rem; cursor:pointer;">Report Chat</div>
+  </div>
+</div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+<div id="productPreviewBar" style="display:none; flex-wrap:wrap; gap:0.5rem; padding:0.5rem; border-top: 1px solid var(--border); background: #0e001f;"></div>
+    <div class="chat-input">
+      <i class="far fa-face-smile" title="Emoji picker"></i>
+      <i class="fas fa-paperclip" title="Attach file"></i>
+     <i class="fas fa-microphone" title="Record voice"></i>
+<div id="recordingIndicator" style="display:none; color:red; font-size:0.9rem;">● Recording...</div>
+      <input type="text" id="messageInput" placeholder="Type a message...">
+      <i class="fas fa-paper-plane" title="Send message" onclick="sendMessage()"></i>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="dashboard-vendor.html" class="nav-item"><i class="fas fa-house"></i>Home</a>
+    <a href="shop.html" class="nav-item"><i class="fas fa-store"></i>My Shop</a>
+    <a href="explore.html" class="nav-item"><i class="fas fa-video"></i>Explore</a>
+    <a href="inbox.html" class="nav-item active"><i class="fas fa-message"></i>Inbox</a>
+    <a href="settings.html" class="nav-item"><i class="fas fa-gear"></i>Settings</a>
+  </nav>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  let currentVendorId = null;
+let attachedVideo = null; // for attached video from Explore
+
+function formatDateLabel(dateStr) {
+  const date = new Date(dateStr);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  const isToday = date.toDateString() === today.toDateString();
+  const isYesterday = date.toDateString() === yesterday.toDateString();
+
+  if (isToday) return 'Today';
+  if (isYesterday) return 'Yesterday';
+
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatTime(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+function toggleChatMenu() {
+  const menu = document.getElementById('chatMenu');
+  menu.style.display = (menu.style.display === 'none' || !menu.style.display) ? 'block' : 'none';
+}
+window.addEventListener('click', e => {
+  if (!e.target.closest('#chatMenu') && !e.target.closest('.fa-ellipsis-v')) {
+    document.getElementById('chatMenu').style.display = 'none';
+  }
+});
+
+function showVideoPreview(videoFile) {
+  const preview = document.createElement('div');
+  preview.className = 'preview-bar';
+  preview.style.cssText = 'display:flex; align-items:center; gap:10px; padding:0.5rem; border-top:1px solid var(--border); background:#0e001f;';
+  preview.innerHTML = `
+    <video src="/uploads/${videoFile}" controls style="max-height:100px; border-radius:10px;"></video>
+    <button onclick="removeVideoPreview()" style="font-size:1.2rem; color:red;">❌</button>
+  `;
+  document.querySelector('.chat-input').before(preview);
+}
+
+function removeVideoPreview() {
+  attachedVideo = null;
+  document.querySelector('.preview-bar')?.remove();
+}
+
+  const searchModal = document.getElementById('searchModal');
+  const openSearch = document.getElementById('openSearch');
+  const vendorSearch = document.getElementById('vendorSearch');
+  const searchResults = document.getElementById('searchResults');
+  const chatView = document.getElementById('chatView');
+  const chatVendorName = document.getElementById('chatVendorName');
+  const chatMessages = document.getElementById('chatMessages');
+  const messageInput = document.getElementById('messageInput');
+  const chatList = document.getElementById('chatList');
+
+  openSearch.onclick = () => searchModal.style.display = 'flex';
+  window.onclick = e => { if (e.target === searchModal) searchModal.style.display = 'none'; };
+
+  // Join user's socket room after fetch
+  fetch('/me')
+    .then(res => res.json())
+    .then(user => {
+      socket.emit('join', user.id);
+    });
+
+  // Load inbox list
+  async function loadInbox() {
+    try {
+      const res = await fetch('/api/inbox');
+      const data = await res.json();
+      chatList.innerHTML = '';
+     data.filter(chat => !chat.cleared).forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'chat-card';
+        card.onclick = () => openChat(item.fromId, item.fromName);
+        card.innerHTML = `
+          <div class="chat-info">
+            <div class="chat-name">${item.fromName}</div>
+            <div class="chat-last-msg">${item.lastMessage}</div>
+          </div>
+          ${item.unreadCount > 0 ? '<div class="unread"></div>' : ''}
+        `;
+        chatList.appendChild(card);
+      });
+    } catch (err) {
+      console.error('Failed to load inbox:', err);
+    }
+  }
+
+// ✅ This must NOT be inside another function!
+window.addEventListener('DOMContentLoaded', async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const vendorId = urlParams.get('vendor');
+
+  if (vendorId) {
+    try {
+      const res = await fetch(`/api/shop/${vendorId}`);
+      const data = await res.json();
+      const vendorName = data.shop.shopName;
+      openChat(vendorId, vendorName);
+    } catch (err) {
+      console.error('Failed to auto-open chat:', err);
+    }
+  }
+messageInput.addEventListener('keypress', e => {
+  if (e.key === 'Enter') sendMessage();
+});
+});
+const attached = localStorage.getItem('venconnect:attachedVideo');
+if (attached) {
+  try {
+    const parsed = JSON.parse(attached);
+    if (parsed.vendorId && parsed.video) {
+      attachedVideo = parsed.video;
+      showVideoPreview(parsed.video);
+    }
+  } catch (err) {
+    console.error('Failed to parse attached video');
+  }
+  localStorage.removeItem('venconnect:attachedVideo');
+}
+
+  // Initial inbox load
+  loadInbox();
+
+  // Real-time listener
+  socket.on('new-message', msg => {
+    if (msg.from === currentVendorId) {
+      const div = document.createElement('div');
+      div.className = 'message them';
+      div.innerText = msg.text;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    loadInbox(); // Auto-refresh inbox listing
+  });
+
+  // Search vendors
+  vendorSearch.oninput = async () => {
+    const query = vendorSearch.value.trim();
+    searchResults.innerHTML = '';
+    if (!query) return;
+
+    searchResults.innerHTML = 'Searching...';
+    try {
+      const res = await fetch('/api/shops?search=' + encodeURIComponent(query));
+      const data = await res.json();
+      if (data.length === 0) {
+        searchResults.innerHTML = 'No results found.';
+        return;
+      }
+
+      searchResults.innerHTML = '';
+      data.forEach(shop => {
+        const div = document.createElement('div');
+        div.className = 'result-item';
+        div.innerText = shop.shopName;
+        div.onclick = async () => {
+          openChat(shop._id, shop.shopName);
+          searchModal.style.display = 'none';
+        };
+        searchResults.appendChild(div);
+      });
+    } catch (err) {
+      searchResults.innerHTML = 'Error loading shops.';
+      console.error('Fetch error:', err);
+    }
+  };
+
+  // Load and show chat
+  async function openChat(vendorId, vendorName) {
+    currentVendorId = vendorId;
+    chatVendorName.textContent = vendorName;
+    chatMessages.innerHTML = '';
+    chatView.style.display = 'flex';
+// Inject attached products (from shop.html)
+const payload = localStorage.getItem('venconnect:attachedProducts');
+if (payload) {
+  const parsed = JSON.parse(payload);
+  if (parsed.vendorId === vendorId) {
+    const previewBar = document.getElementById('productPreviewBar');
+previewBar.innerHTML = '';
+previewBar.style.display = 'flex';
+
+parsed.products.forEach((p, index) => {
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'position:relative; background:var(--frosted); border:1px solid var(--border); padding:0.5rem; border-radius:10px; width:120px;';
+  wrapper.innerHTML = `
+    <img src="/uploads/${p.image}" style="width:100%; height:80px; object-fit:cover; border-radius:8px;" />
+    <div style="font-weight:bold; font-size:0.9rem;">${p.name}</div>
+    <div style="color:var(--accent); font-size:0.8rem;">${p.currency}${p.price}</div>
+    <div class="remove-btn" data-index="${index}" style="position:absolute; top:4px; right:6px; cursor:pointer; color:red;">✕</div>
+  `;
+  previewBar.appendChild(wrapper);
+});
+
+// Remove handler
+previewBar.onclick = e => {
+  if (e.target.classList.contains('remove-btn')) {
+    const index = parseInt(e.target.dataset.index);
+    parsed.products.splice(index, 1);
+    localStorage.setItem('venconnect:attachedProducts', JSON.stringify(parsed));
+    openChat(vendorId, vendorName); // re-render
+  }
+};
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Optionally notify backend of product message
+    
+  }
+}
+
+    await loadMessages(vendorId);
+    await fetch(`/api/messages/${vendorId}/mark-read`, { method: 'PATCH' });
+  }
+
+  async function loadMessages(vendorId) {
+    try {
+      const res = await fetch(`/api/messages/${vendorId}`);
+      const messages = await res.json();
+ let lastGroup = '';
+
+messages.forEach(msg => {
+  const groupLabel = formatDateLabel(msg.createdAt);
+  if (groupLabel !== lastGroup) {
+    const label = document.createElement('div');
+    label.textContent = groupLabel;
+    label.style.cssText = 'text-align:center; margin:10px 0; opacity:0.7; font-size:0.85rem;';
+    chatMessages.appendChild(label);
+    lastGroup = groupLabel;
+  }
+
+  const div = document.createElement('div');
+  div.className = 'message ' + (msg.isMine ? 'me' : 'them');
+  div.dataset.messageId = msg._id;
+  div.onclick = () => {
+    if (!selectMode) return;
+    div.classList.toggle('selected');
+  };
+
+  let html = '';
+  if (msg.text) html += `<div style="margin-bottom:0.4rem;">${msg.text}</div>`;
+
+  if (msg.type === 'product' && Array.isArray(msg.products)) {
+    html += msg.products.map(p => `
+      <div style="margin-bottom:8px;">
+        <div style="font-size:0.75rem; opacity:0.7;">🛍 ${p.name}</div>
+        <img src="/uploads/${p.image}" style="width:120px; border-radius:8px; object-fit:cover;" />
+        <div style="color: var(--accent); font-size: 0.8rem;">${p.currency}${p.price}</div>
+      </div>
+    `).join('');
+  }
+
+  if (msg.video && msg.video.endsWith('.mp4')) {
+    html += `<video src="${msg.video}" controls style="max-width:200px; border-radius:8px;"></video>`;
+  }
+
+  html += `<div style="text-align:right; font-size:0.7rem; opacity:0.6;">${formatTime(msg.createdAt)}</div>`;
+
+  div.innerHTML = html;
+  chatMessages.appendChild(div);
+});
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    } catch (err) {
+      console.error('Failed to load messages:', err);
+    }
+  }
+// === Emoji Picker ===
+document.getElementById('emojiPicker').addEventListener('emoji-click', e => {
+  messageInput.value += e.detail.unicode;
+  document.getElementById('emojiPicker').style.display = 'none';
+});
+
+function toggleEmojiPicker() {
+  const picker = document.getElementById('emojiPicker');
+  picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+}
+
+// Hook into smile icon
+document.querySelector('.fa-face-smile').onclick = toggleEmojiPicker;
+
+// === File Upload ===
+document.querySelector('.fa-paperclip').onclick = () => document.getElementById('fileInput').click();
+
+document.getElementById('fileInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file || !currentVendorId) return;
+document.getElementById('fileInput').value = '';
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const res = await fetch(`/api/messages/${currentVendorId}/file`, {
+      method: 'POST',
+      body: formData
+    });
+
+    const msg = await res.json();
+    const div = document.createElement('div');
+    div.className = 'message me';
+    div.innerHTML = msg.fileUrl.includes('image')
+      ? `<img src="${msg.fileUrl}" style="max-width:150px; border-radius:10px;" />`
+      : `<a href="${msg.fileUrl}" target="_blank">Download File</a>`;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  } catch (err) {
+    console.error('File upload failed:', err);
+  }
+});
+
+// === Voice Recording ===
+let mediaRecorder;
+let audioChunks = [];
+
+document.querySelector('.fa-microphone').onclick = toggleRecording;
+
+async function toggleRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.onstop = async () => {
+document.getElementById('recordingIndicator').style.display = 'none';
+      const blob = new Blob(audioChunks, { type: 'audio/webm' });
+      audioChunks = [];
+
+      const formData = new FormData();
+      formData.append('file', blob, 'voice.webm');
+
+      const res = await fetch(`/api/messages/${currentVendorId}/file`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const msg = await res.json();
+      const div = document.createElement('div');
+      div.className = 'message me';
+      div.innerHTML = `<audio controls src="${msg.fileUrl}"></audio>`;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    };
+
+   mediaRecorder.start();
+document.getElementById('recordingIndicator').style.display = 'block';
+  } catch (err) {
+    alert('Mic access denied');
+  }
+}
+function closeChat() {
+  chatView.style.display = 'none';
+  currentVendorId = null;
+  chatMessages.innerHTML = '';
+  chatVendorName.textContent = '';
+  document.getElementById('productPreviewBar').style.display = 'none';
+}
+let selectMode = false;
+
+function startSelectMode() {
+  selectMode = true;
+  alert('Tap messages to select them. Then press Delete.');
+  const deleteBtn = document.createElement('button');
+  deleteBtn.textContent = 'Delete Selected';
+  deleteBtn.style.cssText = 'position:fixed; bottom:100px; right:20px; background:red; color:white; padding:0.7rem 1rem; border:none; border-radius:10px;';
+  deleteBtn.onclick = deleteSelectedMessages;
+  deleteBtn.id = 'deleteSelectedBtn';
+  document.body.appendChild(deleteBtn);
+}
+
+async function deleteSelectedMessages() {
+  const selected = document.querySelectorAll('.message.selected');
+  const ids = Array.from(selected).map(m => m.dataset.messageId);
+
+  if (!ids.length) return;
+
+  // Remove from DOM
+  selected.forEach(m => m.remove());
+  document.getElementById('deleteSelectedBtn')?.remove();
+  selectMode = false;
+
+  // Send delete request
+  try {
+    await fetch(`/api/messages/${currentVendorId}/delete`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids })
+    });
+  } catch (err) {
+    console.error('Failed to delete messages on server', err);
+  }
+}
+async function clearChat() {
+  if (!confirm('Are you sure you want to clear this chat from your side?')) return;
+
+  try {
+    await fetch(`/api/messages/${currentVendorId}/clear`, {
+      method: 'DELETE'
+    });
+  } catch (err) {
+    console.error('Clear failed:', err);
+  }
+
+  chatMessages.innerHTML = '';
+  chatView.style.display = 'none';
+  currentVendorId = null;
+  loadInbox();
+}
+
+  async function sendMessage() {
+  const text = messageInput.value.trim();
+  const productPayload = localStorage.getItem('venconnect:attachedProducts');
+
+  if (!text && !productPayload && !attachedVideo) return;
+
+  const body = { text: text || '' };
+  const bubble = document.createElement('div');
+  bubble.className = 'message me';
+  let html = '';
+
+  if (text) html += `<div style="margin-bottom:0.5rem;">${text}</div>`;
+
+  if (attachedVideo) {
+    body.video = attachedVideo;
+    body.type = 'file';
+    html += `<video src="/uploads/${attachedVideo}" controls style="max-width:200px; border-radius:8px;"></video>`;
+    removeVideoPreview(); // clear UI
+  }
+
+  if (productPayload) {
+    const parsed = JSON.parse(productPayload);
+    if (parsed.vendorId === currentVendorId) {
+      body.type = 'product';
+      body.products = parsed.products;
+      html += parsed.products.map(p => `
+        <div style="margin-bottom:8px;">
+          <div style="font-size:0.75rem; opacity:0.7;">🛍 ${p.name}</div>
+          <img src="/uploads/${p.image}" style="width:120px; border-radius:8px; object-fit:cover;" />
+          <div style="color: var(--accent); font-size: 0.8rem;">${p.currency}${p.price}</div>
+        </div>
+      `).join('');
+      document.getElementById('productPreviewBar').style.display = 'none';
+      localStorage.removeItem('venconnect:attachedProducts');
+    }
+  }
+
+  bubble.innerHTML = html;
+  chatMessages.appendChild(bubble);
+  messageInput.value = '';
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  try {
+    await fetch(`/api/messages/${currentVendorId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    await loadInbox();
+  } catch (err) {
+    console.error('Failed to send message:', err);
+  }
+}
+  messageInput.addEventListener('keypress', e => {
+    if (e.key === 'Enter') sendMessage();
+  });
+</script>
+<emoji-picker id="emojiPicker" style="position:absolute; bottom:80px; right:20px; display:none;"></emoji-picker>
+<input type="file" id="fileInput" style="display:none" accept="image/*,audio/*" />
+<div id="reportModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:4000; justify-content:center; align-items:center;">
+  <div style="background:#1e0033; padding:1.5rem; border-radius:12px; width:90%; max-width:400px; color:white;">
+    <h3 style="margin-bottom:1rem;">Report Chat</h3>
+    <form id="reportForm">
+      <label><input type="radio" name="reason" value="spam" required /> Spam</label><br/>
+      <label><input type="radio" name="reason" value="fraud" /> Fraud</label><br/>
+      <label><input type="radio" name="reason" value="no_delivery" /> No Delivery</label><br/>
+      <label><input type="radio" name="reason" value="other" /> Other</label><br/>
+      <textarea id="otherReason" name="message" rows="3" placeholder="Describe the issue" style="margin-top:1rem; display:none; width:100%; border-radius:8px; padding:0.5rem;"></textarea>
+      <div style="margin-top:1rem; display:flex; justify-content:space-between;">
+        <button type="submit" style="padding:0.5rem 1rem; background:var(--accent); border:none; color:white; border-radius:8px;">Submit Report</button>
+        <button type="button" onclick="closeReportModal()" style="padding:0.5rem 1rem; background:#555; border:none; color:white; border-radius:8px;">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+function reportChat() {
+  if (!currentVendorId) return alert("No vendor selected.");
+  document.getElementById('reportModal').style.display = 'flex';
+  toggleChatMenu();
+}
+
+function closeReportModal() {
+  document.getElementById('reportModal').style.display = 'none';
+  document.getElementById('reportForm').reset();
+  document.getElementById('otherReason').style.display = 'none';
+}
+
+document.getElementById('reportForm').addEventListener('change', e => {
+  const fd = new FormData(document.getElementById('reportForm'));
+  const reason = fd.get('reason');
+  const otherBox = document.getElementById('otherReason');
+  otherBox.style.display = reason === 'other' ? 'block' : 'none';
+});
+
+document.getElementById('reportForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const reason = fd.get('reason');
+  const message = fd.get('message') || '';
+
+  if (!reason || !currentVendorId) {
+    alert('Missing reason or vendor ID');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/report-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        reportedUserId: currentVendorId,
+        reason,
+        message
+      })
+    });
+
+    if (!res.ok) throw new Error(await res.text());
+    alert('Report submitted.');
+    closeReportModal();
+  } catch (err) {
+    console.error('Report error:', err);
+    alert('Error submitting report.');
+  }
+});  
+</script>
+</body>
+</html>

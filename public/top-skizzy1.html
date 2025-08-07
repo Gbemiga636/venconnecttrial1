@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Top Skizzy Vendors | VenConnect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lemon&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #25004d, #4c0099, #000000);
+      --text-color: #fff;
+      --accent: #a05cff;
+      --frosted: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.15);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-color);
+    }
+
+    h2 {
+      font-family: 'Lemon', cursive;
+      padding: 1.5rem 1rem 1rem;
+      font-size: 1.8rem;
+      text-align: center;
+    }
+
+    .vendors-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      padding: 1rem;
+    }
+
+    .flip-card {
+      background: transparent;
+      width: 100%;
+      height: 360px;
+      perspective: 1000px;
+    }
+
+    .flip-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.8s;
+      transform-style: preserve-3d;
+    }
+
+    .flip-card.flipped .flip-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-front, .flip-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 15px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--frosted);
+      backdrop-filter: blur(10px);
+    }
+
+    .flip-front {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    canvas.scratch {
+      width: 100%;
+      height: 100%;
+    }
+
+    .flip-back {
+      transform: rotateY(180deg);
+      padding: 1rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .vendor-logo {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 50%;
+      margin: 0 auto 0.8rem;
+    }
+
+    .vendor-name {
+      font-weight: 600;
+      font-size: 1.2rem;
+    }
+
+    .vendor-info {
+      font-size: 0.9rem;
+      opacity: 0.85;
+      margin-top: 0.3rem;
+    }
+
+    nav.bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #0e001f;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0.8rem 0;
+      z-index: 999;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: white;
+      font-size: 0.75rem;
+      opacity: 0.6;
+      text-decoration: none;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+      opacity: 1;
+    }
+
+    .nav-item i {
+      font-size: 1.3rem;
+      margin-bottom: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Top Skizzy Vendors 🏆</h2>
+  <div class="vendors-container" id="vendorsContainer"></div>
+
+  <nav class="bottom-nav">
+    <a href="dashboard-customer.html" class="nav-item"><i class="fas fa-house"></i>Home</a>
+    <a href="top-skizzy.html" class="nav-item active"><i class="fas fa-trophy"></i>Skizzy Vendor</a>
+    <a href="explore-customer.html" class="nav-item"><i class="fas fa-video"></i>Explore</a>
+    <a href="inbox-customer.html" class="nav-item"><i class="fas fa-message"></i>Inbox</a>
+    <a href="settings-customer.html" class="nav-item"><i class="fas fa-gear"></i>Settings</a>
+  </nav>
+
+<script>
+  const STORAGE_KEY = 'openedSkizzyVendors';
+
+  function getOpenedVendors() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  function markVendorAsOpened(vendorId) {
+    const opened = getOpenedVendors();
+    if (!opened.includes(vendorId)) {
+      opened.push(vendorId);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(opened));
+    }
+  }
+
+  async function loadTopVendors() {
+  const res = await fetch('/api/vendors/top');
+  let vendors = await res.json();
+
+  // Fallback: Try fetch all vendors if top returns none
+  if (!Array.isArray(vendors) || vendors.length === 0) {
+    const altRes = await fetch('/api/vendors/all');
+    const allVendors = await altRes.json();
+    vendors = (Array.isArray(allVendors) ? allVendors : []).sort((a, b) => b.likes - a.likes);
+  }
+
+  const opened = getOpenedVendors();
+  const container = document.getElementById('vendorsContainer');
+  container.innerHTML = '';
+
+  if (vendors.length === 0) {
+    container.innerHTML = `<p style="text-align:center;opacity:0.7;">No vendors available yet.</p>`;
+    return;
+  }
+
+  vendors.forEach(v => {
+    const card = document.createElement('div');
+    card.className = 'flip-card';
+    if (opened.includes(v._id)) card.classList.add('flipped');
+
+    const inner = document.createElement('div');
+    inner.className = 'flip-inner';
+
+    const front = document.createElement('div');
+    front.className = 'flip-front';
+
+    const canvas = document.createElement('canvas');
+    canvas.className = 'scratch';
+    front.appendChild(canvas);
+
+    const back = document.createElement('div');
+    back.className = 'flip-back';
+    back.innerHTML = `
+      <img src="/uploads/${v.shopLogo}" class="vendor-logo" />
+      <div class="vendor-name">
+        ${v.shopName}
+        ${v.kycVerified ? '<i class="fas fa-check-circle" style="color:#1da1f2; margin-left: 6px;" title="Verified"></i>' : ''}
+      </div>
+      <div class="vendor-info">📍 ${v.location || 'Unknown'}</div>
+      <div class="vendor-info">🔥 ${v.likes} Likes</div>
+    `;
+
+    inner.appendChild(front);
+    inner.appendChild(back);
+    card.appendChild(inner);
+    container.appendChild(card);
+
+    if (!opened.includes(v._id)) {
+      setupScratch(canvas, () => {
+        card.classList.add('flipped');
+        markVendorAsOpened(v._id);
+      });
+    }
+  });
+}
+
+  function setupScratch(canvas, onReveal) {
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width = canvas.offsetWidth;
+    const h = canvas.height = canvas.offsetHeight;
+    ctx.fillStyle = '#888';
+    ctx.fillRect(0, 0, w, h);
+
+    let isDrawing = false;
+    let revealed = 0;
+
+    function draw(e) {
+      if (!isDrawing) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+      const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath();
+      ctx.arc(x, y, 20, 0, Math.PI * 2);
+      ctx.fill();
+
+      revealed++;
+      if (revealed > 50) onReveal();
+    }
+
+    canvas.addEventListener('mousedown', () => isDrawing = true);
+    canvas.addEventListener('mouseup', () => isDrawing = false);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('touchstart', () => isDrawing = true);
+    canvas.addEventListener('touchend', () => isDrawing = false);
+    canvas.addEventListener('touchmove', draw);
+  }
+
+  loadTopVendors();
+</script>
+</body>
+</html>

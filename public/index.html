@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VenConnect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Lemon&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #25004d, #4c0099, #000000);
+      --frosted-glass: rgba(255, 255, 255, 0.1);
+      --text-color: #ffffff;
+      --accent: #a05cff;
+      --glow: 0 0 12px rgba(160, 92, 255, 0.6), 0 0 32px rgba(160, 92, 255, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      font-family: 'Poppins', sans-serif;
+      color: var(--text-color);
+      background: var(--bg-gradient);
+      overflow-x: hidden;
+    }
+
+    body.loaded .loader {
+      display: none;
+    }
+
+    .loader {
+      height: 100vh;
+      width: 100vw;
+      background: black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      font-family: 'Lemon', cursive;
+      color: #a05cff;
+      letter-spacing: 0.1em;
+      animation: glitch 1s infinite alternate;
+      text-align: center;
+      padding: 0 1rem;
+    }
+
+    @keyframes glitch {
+      0% { text-shadow: 2px 2px #ff00c8, -2px -2px #00fff7; }
+      100% { text-shadow: -2px -2px #ff00c8, 2px 2px #00fff7; }
+    }
+
+    header {
+  padding: 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.5); /* keep semi-dark background */
+  backdrop-filter: none; /* removed blur/light effect */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+header h1 {
+  font-size: 2.2rem;
+  font-family: 'Lemon', cursive;
+  color: #fff;
+  text-shadow: none; /* removed glow */
+}
+
+header h1 span.big {
+  font-size: 2.6rem;
+  color: var(--accent);
+}
+.card h4 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: var(--accent);
+}
+
+.card p {
+  color: #ddd;
+  line-height: 1.6;
+}
+
+    .hero {
+      min-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4rem 1rem;
+    }
+.hero img {
+  width: 900px; /* Increase size */
+  max-width: 90%; /* Keep responsive */
+  height: auto;
+  margin-bottom: 1.5rem;
+  filter: drop-shadow(0 0 20px rgba(160, 92, 255, 0.3)); /* Optional glow */
+}
+
+    .hero h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin-bottom: 2rem;
+    }
+
+    .hero button {
+      padding: 0.9rem 2.5rem;
+      background: linear-gradient(145deg, #7a3cff, #a05cff);
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      border-radius: 40px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(160, 92, 255, 0.4);
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(160, 92, 255, 0.6);
+    }
+
+    section {
+      padding: 4rem 2rem;
+      background: rgba(255,255,255,0.05);
+      margin: 1rem;
+      border-radius: 1rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(15px);
+    }
+
+    .about, .why {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .icon {
+      font-size: 2rem;
+      margin-right: 0.5rem;
+      color: var(--accent);
+    }
+
+    .section-title {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      font-family: 'Lemon', cursive;
+    }
+
+    .card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    @media (max-width: 768px) {
+      .hero h2 {
+        font-size: 2rem;
+      }
+
+      .hero img {
+        max-width: 100px;
+      }
+
+      section {
+        padding: 2rem 1rem;
+      }
+
+      .card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      header h1 {
+        font-size: 1.6rem;
+      }
+
+      header h1 span.big {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="loader" id="loader">V</div>
+
+  <!-- ✅ HEADER -->
+  <header>
+    <h1><span class="big">V</span>en<span class="big">C</span>onnect</h1>
+  </header>
+
+  <!-- ✅ HERO SECTION -->
+  <main>
+    <section class="hero">
+      <img src="venconnect-logo.png" alt="VenConnect Logo" />
+
+      <h2>Empowering Vendors, Connecting Markets</h2>
+      <p>VenConnect is the bridge between you and your customers, whether you're online or offline.</p>
+
+      <button onclick="window.location.href='get-started.html'">Get Started</button>
+    </section>
+
+    <!-- ✅ ABOUT -->
+    <section id="how" class="about">
+      <h3 class="section-title"><i class="fas fa-lightbulb icon"></i>How VenConnect Works</h3>
+      <div class="card">
+        <i class="fas fa-store icon"></i>
+        <p>Vendors sign up, list products or short videos, and start receiving orders instantly.</p>
+      </div>
+      <div class="card">
+        <i class="fas fa-comments icon"></i>
+        <p>Customers can message, comment on videos, or chat with vendors directly.</p>
+      </div>
+    </section>
+
+    <!-- ✅ WHY CHOOSE US -->
+    <section id="get-started" class="why">
+      <h3 class="section-title"><i class="fas fa-check-circle icon"></i>Why Choose VenConnect</h3>
+      <div class="card">
+        <i class="fas fa-handshake icon"></i>
+        <p>We give vendors and small business owners visibility, trust, and customer access like never before.</p>
+      </div>
+      <div class="card">
+        <i class="fas fa-rocket icon"></i>
+        <p>It’s simple, free to start, and works even if you don’t have a tech background.</p>
+      </div>
+    </section>
+<!-- ✅ FEATURES SECTION -->
+<section class="why">
+  <h3 class="section-title"><i class="fas fa-star icon"></i>Features You’ll Love</h3>
+  <div class="card"><i class="fas fa-bolt icon"></i><p>Superfast setup – go live in minutes, not weeks.</p></div>
+  <div class="card"><i class="fas fa-video icon"></i><p>Post short product videos that speak louder than 1000 words.</p></div>
+  <div class="card"><i class="fas fa-chart-line icon"></i><p>Get insights, manage inventory, and track growth from your vendor dashboard.</p></div>
+  <div class="card"><i class="fas fa-money-bill-wave icon"></i><p>Instant withdrawals when your cash drops — no long story!</p></div>
+  <div class="card"><i class="fas fa-badge-check icon"></i><p>Verified vendor badges earn you trust faster than you can say "burbur".</p></div>
+  <div class="card"><i class="fas fa-comments-dollar icon"></i><p>Talk directly to your buyers — voice notes, texts, and chats, all-in-one.</p></div>
+</section>
+
+<!-- ✅ WHY WE BEAT JUMIA/KONGA -->
+<section class="about">
+  <h3 class="section-title"><i class="fas fa-fire icon"></i>Why VenConnect Is Skizzyy</h3>
+  
+  <div class="card">
+    <i class="fas fa-bolt icon"></i>
+    <div>
+      <h4>Instant Setup, Zero Wahala</h4>
+      <p>If you're a vendor and you’re not on VenConnect... omo, you’re not skizzy. No long form — just signup, post your video, and boom! Orders dey fly in like Friday night suya.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <i class="fas fa-handshake icon"></i>
+    <div>
+      <h4>Built for Vendors, Not Just Big Brands</h4>
+      <p>We’re not that uncle wey show only when jollof dey. We dey with you steady — from burti to burbur. No ghosting, just growth.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <i class="fas fa-unlock icon"></i>
+    <div>
+      <h4>Freedom Over Frustration</h4>
+      <p>While Jumia dey drop rules like assignment, we give you free hand to sell your market. Na you get the keys to your hustle.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <i class="fas fa-comments icon"></i>
+    <div>
+      <h4>Vibe With Your Customers</h4>
+      <p>Talk your talk — text, voice, chat. Build real connection. No form, just flow. Make your market dey relatable like that your WhatsApp plug.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <i class="fas fa-mobile-alt icon"></i>
+    <div>
+      <h4>No Tech? No Problem.</h4>
+      <p>Even if na touch-light phone you dey use, you go still shine. We made this platform for the streets — simple but elite.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <i class="fas fa-fire-alt icon"></i>
+    <div>
+      <h4>Hotcake Platform</h4>
+      <p>This one no be anyhow site. Na hotcake. Real plug for ifatizzy vendors wey no dey carry last. Be skizzy. Be burti. Be on VenConnect.</p>
+    </div>
+  </div>
+</section>
+  </main>
+
+  <footer>
+    &copy; 2025 VenConnect. All rights reserved.
+  </footer>
+
+  <script>
+    const loader = document.getElementById('loader');
+    const name = "VenConnect";
+    let index = 0;
+
+    function typeLoader() {
+      if (index < name.length) {
+        loader.textContent = name.slice(0, index + 1);
+        index++;
+        setTimeout(typeLoader, 200);
+      } else {
+        document.body.classList.add('loaded');
+      }
+    }
+
+    window.onload = typeLoader;
+  </script>
+</body>
+</html>

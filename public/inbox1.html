@@ -1,0 +1,438 @@
+<!-- FILE: inbox.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inbox | VenConnect</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lemon&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #25004d, #4c0099, #000000);
+      --text-color: #fff;
+      --accent: #a05cff;
+      --frosted: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.15);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-color);
+      overflow-x: hidden;
+    }
+
+    .header {
+      text-align: center;
+      padding: 1rem;
+      font-family: 'Lemon', cursive;
+      font-size: 1.5rem;
+    }
+
+    .chat-list {
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      gap: 1rem;
+    }
+
+    .chat-card {
+      background: var(--frosted);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .chat-card img {
+      width: 55px;
+      height: 55px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    .chat-info {
+      flex: 1;
+    }
+
+    .chat-name {
+      font-weight: 600;
+    }
+
+    .chat-last-msg {
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+
+    .unread {
+      background: var(--accent);
+      border-radius: 50%;
+      width: 10px;
+      height: 10px;
+    }
+
+    .floating-btn {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      width: 55px;
+      height: 55px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      cursor: pointer;
+    }
+
+    .search-modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .search-box {
+      background: #1e0033;
+      padding: 2rem;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .search-wrapper {
+      position: relative;
+    }
+
+    .search-wrapper input {
+      width: 100%;
+      padding: 0.9rem 1rem 0.9rem 2.8rem;
+      border-radius: 40px;
+      border: none;
+      font-size: 1rem;
+      background: var(--frosted);
+      color: white;
+      outline: none;
+      border: 1px solid var(--border);
+    }
+
+    .search-wrapper i {
+      position: absolute;
+      top: 50%;
+      left: 1rem;
+      transform: translateY(-50%);
+      color: #ccc;
+    }
+
+    .result-item {
+      background: var(--frosted);
+      border: 1px solid var(--border);
+      padding: 0.6rem 1rem;
+      margin-top: 0.5rem;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .chat-view {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg-gradient);
+      z-index: 3000;
+    }
+
+    .chat-header {
+      padding: 1rem;
+      background: #0e001f;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .message {
+      max-width: 70%;
+      padding: 0.7rem 1rem;
+      border-radius: 20px;
+    }
+
+    .me {
+      align-self: flex-end;
+      background: var(--accent);
+    }
+
+    .them {
+      align-self: flex-start;
+      background: var(--frosted);
+      border: 1px solid var(--border);
+    }
+
+    .chat-input {
+      display: flex;
+      padding: 0.7rem;
+      border-top: 1px solid var(--border);
+      gap: 0.5rem;
+      align-items: center;
+      background: #0e001f;
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 0.7rem;
+      border-radius: 20px;
+      border: none;
+      outline: none;
+      background: var(--frosted);
+      color: white;
+    }
+
+    .chat-input i {
+      cursor: pointer;
+    }
+
+    nav.bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #0e001f;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0.8rem 0;
+      z-index: 999;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: white;
+      font-size: 0.75rem;
+      opacity: 0.6;
+      text-decoration: none;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+      opacity: 1;
+    }
+
+    .nav-item i {
+      font-size: 1.3rem;
+      margin-bottom: 0.2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">Your Inbox</div>
+  <div class="chat-list" id="chatList"></div>
+
+  <div class="floating-btn" id="openSearch" title="New chat" aria-label="Open Search"><i class="fas fa-plus"></i></div>
+
+  <div class="search-modal" id="searchModal">
+    <div class="search-box">
+      <div class="search-wrapper">
+        <i class="fas fa-search"></i>
+        <input type="text" id="vendorSearch" placeholder="Search shop name, location, bio...">
+      </div>
+      <div id="searchResults"></div>
+    </div>
+  </div>
+
+  <div class="chat-view" id="chatView">
+    <div class="chat-header">
+      <button onclick="closeChat()" aria-label="Close chat">←</button>
+      <div id="chatVendorName">Vendor Name</div>
+      <div><i class="fas fa-ellipsis-v" title="More options" onclick="alert('Options: Clear chat, Block, Report...')"></i></div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input">
+      <i class="far fa-face-smile" title="Emoji picker" onclick="alert('Emoji picker coming soon')"></i>
+      <i class="fas fa-paperclip" title="Attach file" onclick="alert('Open file selector')"></i>
+      <i class="fas fa-microphone" title="Record voice" onclick="alert('Record voice note')"></i>
+      <input type="text" id="messageInput" placeholder="Type a message...">
+      <i class="fas fa-paper-plane" title="Send message" onclick="sendMessage()"></i>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <a href="dashboard-vendor.html" class="nav-item"><i class="fas fa-house"></i>Home</a>
+    <a href="shop.html" class="nav-item"><i class="fas fa-store"></i>My Shop</a>
+    <a href="explore.html" class="nav-item"><i class="fas fa-video"></i>Explore</a>
+    <a href="inbox.html" class="nav-item active"><i class="fas fa-message"></i>Inbox</a>
+    <a href="settings.html" class="nav-item"><i class="fas fa-gear"></i>Settings</a>
+  </nav>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  let currentVendorId = null;
+
+  const searchModal = document.getElementById('searchModal');
+  const openSearch = document.getElementById('openSearch');
+  const vendorSearch = document.getElementById('vendorSearch');
+  const searchResults = document.getElementById('searchResults');
+  const chatView = document.getElementById('chatView');
+  const chatVendorName = document.getElementById('chatVendorName');
+  const chatMessages = document.getElementById('chatMessages');
+  const messageInput = document.getElementById('messageInput');
+  const chatList = document.getElementById('chatList');
+
+  openSearch.onclick = () => searchModal.style.display = 'flex';
+  window.onclick = e => { if (e.target === searchModal) searchModal.style.display = 'none'; };
+
+  // Join user's socket room after fetch
+  fetch('/me')
+    .then(res => res.json())
+    .then(user => {
+      socket.emit('join', user.id);
+    });
+
+  // Real-time listener
+  socket.on('new-message', msg => {
+    if (msg.from === currentVendorId) {
+      const div = document.createElement('div');
+      div.className = 'message them';
+      div.innerText = msg.text;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+  });
+
+  // Load inbox on page load
+  fetch('/api/inbox')
+    .then(res => res.json())
+    .then(data => {
+      chatList.innerHTML = '';
+      data.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'chat-card';
+        card.onclick = () => openChat(item.fromId, item.fromName);
+        card.innerHTML = `
+          <div class="chat-info">
+            <div class="chat-name">${item.fromName}</div>
+            <div class="chat-last-msg">${item.lastMessage}</div>
+          </div>
+          ${item.unreadCount > 0 ? '<div class="unread"></div>' : ''}
+        `;
+        chatList.appendChild(card);
+      });
+    });
+
+  // Search vendors
+  vendorSearch.oninput = async () => {
+    const query = vendorSearch.value.trim();
+    searchResults.innerHTML = '';
+    if (!query) return;
+
+    searchResults.innerHTML = 'Searching...';
+    try {
+      const res = await fetch('/api/shops?search=' + encodeURIComponent(query));
+      const data = await res.json();
+      if (data.length === 0) {
+        searchResults.innerHTML = 'No results found.';
+        return;
+      }
+
+      searchResults.innerHTML = '';
+      data.forEach(shop => {
+        const div = document.createElement('div');
+        div.className = 'result-item';
+        div.innerText = shop.shopName;
+        div.onclick = async () => {
+          openChat(shop._id, shop.shopName);
+          searchModal.style.display = 'none';
+        };
+        searchResults.appendChild(div);
+      });
+    } catch (err) {
+      searchResults.innerHTML = 'Error loading shops.';
+      console.error('Fetch error:', err);
+    }
+  };
+
+  // Load and show chat
+  async function openChat(vendorId, vendorName) {
+    currentVendorId = vendorId;
+    chatVendorName.textContent = vendorName;
+    chatMessages.innerHTML = '';
+    chatView.style.display = 'flex';
+
+    await loadMessages(vendorId);
+    await fetch(`/api/messages/${vendorId}/mark-read`, { method: 'PATCH' });
+  }
+
+  async function loadMessages(vendorId) {
+    try {
+      const res = await fetch(`/api/messages/${vendorId}`);
+      const messages = await res.json();
+      messages.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = 'message ' + (msg.isMine ? 'me' : 'them');
+        div.innerText = msg.text;
+        chatMessages.appendChild(div);
+      });
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    } catch (err) {
+      console.error('Failed to load messages:', err);
+    }
+  }
+
+  async function sendMessage() {
+    const text = messageInput.value.trim();
+    if (!text || !currentVendorId) return;
+
+    const msg = document.createElement('div');
+    msg.className = 'message me';
+    msg.innerText = text;
+    chatMessages.appendChild(msg);
+    messageInput.value = '';
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    try {
+      await fetch(`/api/messages/${currentVendorId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+    } catch (err) {
+      console.error('Failed to send message:', err);
+    }
+  }
+
+  function closeChat() {
+    chatView.style.display = 'none';
+    chatMessages.innerHTML = '';
+    currentVendorId = null;
+  }
+messageInput.addEventListener('keypress', e => {
+  if (e.key === 'Enter') sendMessage();
+});
+</script>
+</body>
+</html>

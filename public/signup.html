@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Choose Account Type | VenConnect</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lemon&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #a05cff;
+      --bg: linear-gradient(135deg, #25004d, #4c0099, #000000);
+      --card-bg: rgba(255, 255, 255, 0.06);
+      --border: rgba(255, 255, 255, 0.15);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding: 1rem;
+    }
+
+    .role-container {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .role-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      width: 160px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      backdrop-filter: blur(15px);
+    }
+
+    .role-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 25px rgba(160, 92, 255, 0.4);
+    }
+
+    .role-card i {
+      font-size: 2.2rem;
+      margin-bottom: 0.8rem;
+      color: var(--accent);
+    }
+
+    .role-card h3 {
+      font-size: 1.2rem;
+      font-family: 'Lemon', cursive;
+    }
+
+    @media (max-width: 480px) {
+      .role-card {
+        width: 140px;
+        padding: 1.5rem 1rem;
+      }
+
+      .role-card i {
+        font-size: 2rem;
+      }
+
+      .role-card h3 {
+        font-size: 1rem;
+      }
+    }
+  </style>
+<script>
+  function goTo(role) {
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get("redirect");
+    const url = `/${role}-signup.html` + (redirect ? `?redirect=${encodeURIComponent(redirect)}` : "");
+    window.location.href = url;
+  }
+</script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+  <div class="role-container">
+    <div class="role-card" onclick="goTo('vendor')">
+      <i class="fas fa-store"></i>
+      <h3>Vendor</h3>
+    </div>
+    <div class="role-card" onclick="goTo('customer')">
+      <i class="fas fa-user"></i>
+      <h3>Customer</h3>
+    </div>
+  </div>
+</body>
+</html>
