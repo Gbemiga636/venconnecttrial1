@@ -16,7 +16,7 @@ const http = require('http').createServer(app);
 const io = require('socket.io')(http, { cors: { origin: '*' } });
 
 const PORT = process.env.PORT || 3001;
-const MONGO_URI = 'mongodb://localhost:27017/venconnect';
+const MONGO_URI = 'mongodb+srv://venconnect:Gbemiga%401234@venconnect-cluster.wc5ye62.mongodb.net/?retryWrites=true&w=majority&appName=venconnect-cluster';
 const JWT_SECRET = 'your_secret_key_here';
 const JWT_EXPIRY = '7d';
 
@@ -253,7 +253,7 @@ app.post('/signup-vendor', upload.single('shopLogo'), async (req, res) => {
     });
 
     await newUser.save();
-    res.send("Vendor registered. You may now log in.");
+     return res.redirect('/login.html');
   } catch (error) {
     console.error(error);
     res.status(500).send("Something went wrong.");
@@ -271,7 +271,7 @@ app.post('/signup-customer', async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 10);
     const newUser = new User({ name, email, phone, passwordHash, role: 'customer' });
     await newUser.save();
-    res.send("Customer registered. You may now log in.");
+     return res.redirect('/login.html');
   } catch (error) {
     console.error(error);
     res.status(500).send("Something went wrong.");
